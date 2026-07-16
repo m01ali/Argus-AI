@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Argus-AI — Four-Stage Closed Loop</title>
+<style>
+  :root{
+    --navy:#0B2447; --deep:#19376D; --steel:#576CBC; --ice:#A5D7E8;
+    --cyan:#00BFC4; --ink:#1A2233; --muted:#6B7A90; --bg:#F4F7FB;
+    --good:#16A34A; --good-bg:#DCFCE7; --warn:#B45309; --warn-bg:#FEF3C7;
+    --bad:#B91C1C; --bad-bg:#FEE2E2; --line:#CBD7E6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:"Segoe UI",-apple-system,system-ui,sans-serif;
+    background:
+      radial-gradient(circle at 12% 8%, rgba(0,191,196,.07), transparent 40%),
+      radial-gradient(circle at 88% 92%, rgba(87,108,188,.08), transparent 45%),
+      var(--bg);
+    color:var(--ink); padding:48px 32px; min-height:100vh;
+  }
+  .wrap{max-width:1180px;margin:0 auto}
+  header{margin-bottom:14px}
+  .kicker{
+    font-size:12px; letter-spacing:4px; font-weight:700; color:var(--cyan);
+    text-transform:uppercase;
+  }
+  h1{
+    font-size:30px; font-weight:800; color:var(--navy); margin:4px 0 6px;
+    letter-spacing:-.5px;
+  }
+  .sub{font-size:15px; color:var(--muted); max-width:760px; line-height:1.5}
+  .privacy-pill{
+    display:inline-flex; align-items:center; gap:8px; margin-top:14px;
+    background:var(--good-bg); color:var(--good); border:1px solid var(--good);
+    padding:7px 14px; border-radius:999px; font-size:12.5px; font-weight:700;
+    letter-spacing:.5px;
+  }
+  .privacy-pill::before{content:"🔒"; font-size:14px}
+
+  /* Trust-zone canvas */
+  .canvas{
+    margin-top:34px; position:relative;
+    border:2px dashed var(--good); border-radius:18px;
+    background:linear-gradient(180deg,rgba(220,252,231,.35),rgba(244,247,251,.2));
+    padding:30px 26px 34px;
+  }
+  .zone-tag{
+    position:absolute; top:-13px; left:24px; background:var(--good);
+    color:#fff; font-size:11px; font-weight:700; letter-spacing:2px;
+    padding:5px 14px; border-radius:7px;
+  }
+
+  .loop{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:18px;
+    position:relative; z-index:2;
+  }
+  .stage{
+    background:#fff; border:1px solid var(--line); border-radius:14px;
+    padding:0 0 18px; overflow:hidden; position:relative;
+    box-shadow:0 10px 26px -16px rgba(11,36,71,.45);
+    transition:transform .25s ease, box-shadow .25s ease;
+  }
+  .stage:hover{transform:translateY(-5px); box-shadow:0 18px 34px -16px rgba(11,36,71,.5)}
+  .stage .top{
+    background:var(--navy); color:#fff; padding:14px 16px 13px;
+    display:flex; align-items:center; gap:11px;
+  }
+  .stage .num{
+    width:30px;height:30px;border-radius:9px; background:var(--cyan);
+    color:var(--navy); font-weight:800; font-size:15px;
+    display:flex;align-items:center;justify-content:center; flex-shrink:0;
+  }
+  .stage .top h3{font-size:15.5px; font-weight:700; letter-spacing:.2px}
+  .stage .body{padding:15px 16px 4px}
+  .stage .model{
+    display:inline-block; font-size:10.5px; font-weight:700; letter-spacing:.5px;
+    padding:3px 9px; border-radius:6px; margin-bottom:10px;
+  }
+  .m-exec{background:var(--ice); color:var(--deep)}
+  .m-adv{background:#E6E1FA; color:#4632A8}
+  .m-sand{background:var(--warn-bg); color:var(--warn)}
+  .stage p{font-size:12.5px; line-height:1.5; color:var(--ink)}
+  .stage .tools{
+    margin-top:11px; display:flex; flex-wrap:wrap; gap:5px;
+  }
+  .stage .tools span{
+    font-size:10px; font-weight:600; background:var(--bg);
+    border:1px solid var(--line); color:var(--muted);
+    padding:3px 7px; border-radius:5px; font-family:"SF Mono",Consolas,monospace;
+  }
+  .gate{
+    margin-top:12px; font-size:11px; font-weight:700; padding:6px 9px;
+    border-radius:7px; display:flex; align-items:center; gap:6px;
+  }
+  .gate-good{background:var(--good-bg); color:var(--good)}
+  .gate-human{background:var(--warn-bg); color:var(--warn)}
+
+  /* arrows between stages */
+  .loop .stage:not(:last-child)::after{
+    content:"▶"; position:absolute; right:-14px; top:50%;
+    transform:translateY(-50%); color:var(--cyan); font-size:15px; z-index:5;
+  }
+
+  /* the closing return arrow */
+  .return{
+    margin-top:22px; position:relative; height:54px;
+  }
+  .return .track{
+    position:absolute; left:12.5%; right:12.5%; top:50%;
+    border-top:2.5px dashed var(--steel); 
+  }
+  .return .label{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    background:var(--bg); padding:5px 16px; font-size:12px; font-weight:700;
+    color:var(--steel); letter-spacing:.6px;
+  }
+  .return .cap-left,.return .cap-right{
+    position:absolute; top:50%; transform:translateY(-50%);
+    width:11px;height:11px;border-radius:50%; background:var(--steel);
+  }
+  .return .cap-left{left:calc(12.5% - 5px)}
+  .return .cap-right{right:calc(12.5% - 5px)}
+  .return .arrow-up{
+    position:absolute; left:calc(12.5% - 6px); top:calc(50% - 7px);
+    color:var(--steel); font-size:15px; font-weight:700;
+  }
+
+  /* legend / mechanism notes */
+  .notes{
+    margin-top:38px; display:grid; grid-template-columns:repeat(3,1fr); gap:16px;
+  }
+  .note{
+    background:#fff;border:1px solid var(--line);border-left:4px solid var(--cyan);
+    border-radius:10px; padding:15px 16px;
+  }
+  .note h4{font-size:12px;letter-spacing:1.5px;color:var(--deep);
+    text-transform:uppercase; margin-bottom:7px}
+  .note p{font-size:12.5px;line-height:1.5;color:var(--ink)}
+  .note strong{color:var(--navy)}
+  footer{margin-top:32px;text-align:center;font-size:11.5px;color:var(--muted)}
+  @media(max-width:880px){
+    .loop{grid-template-columns:1fr 1fr}
+    .loop .stage:nth-child(2)::after{display:none}
+    .notes{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">PLPF · Privacy-First Continuous Assessment</div>
+    <h1>Argus-AI — Four-Stage Closed Loop</h1>
+    <p class="sub">A vulnerability-discovery and patch-recommendation agent modelled on the
+    Aardvark scan&ndash;validate&ndash;patch&ndash;rescan pattern &mdash; but every model call runs on
+    a local LLM, so engagement data never leaves the assessment perimeter.</p>
+    <div class="privacy-pill">NO ENGAGEMENT DATA LEAVES THE HOST</div>
+  </header>
+
+  <div class="canvas">
+    <div class="zone-tag">TRUSTED LOCAL PERIMETER · KALI LINUX</div>
+
+    <div class="loop">
+      <!-- Stage 1 -->
+      <div class="stage">
+        <div class="top"><div class="num">1</div><h3>Discovery</h3></div>
+        <div class="body">
+          <span class="model m-exec">SHELLGPT · LLaMA3:8B (stateless)</span>
+          <p>Structured recon, scanning &amp; vulnerability identification across the
+          in-scope environment, following the validated PTES phase sequence. Outputs are
+          <strong>direct executable terminal results</strong> from local tooling — not
+          cloud-mediated summaries.</p>
+          <div class="tools">
+            <span>nmap</span><span>nikto</span><span>sqlmap</span><span>searchsploit</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stage 2 -->
+      <div class="stage">
+        <div class="top"><div class="num">2</div><h3>Validation</h3></div>
+        <div class="body">
+          <span class="model m-sand">ISOLATED VMWARE SANDBOX</span>
+          <p>Every candidate finding is <strong>exploit-verified</strong> inside an
+          isolated sandbox using the same Kali toolchain. Only findings with a confirmed
+          proof-of-exploit advance — the structural defence against the hallucination
+          failure mode.</p>
+          <div class="gate gate-good">✓ Gate: proof-of-exploit required</div>
+        </div>
+      </div>
+
+      <!-- Stage 3 -->
+      <div class="stage">
+        <div class="top"><div class="num">3</div><h3>Patch Proposal</h3></div>
+        <div class="body">
+          <span class="model m-adv">GEMMA3:12B · advisory (Outcome B)</span>
+          <p>For verified findings only, the advisor model drafts structured remediation —
+          <strong>configuration, package upgrades, code-level fixes</strong> — leveraging its
+          analytical depth while side-stepping its self-execution failure mode.</p>
+          <div class="gate gate-human">⚠ Human-in-the-loop authorisation</div>
+        </div>
+      </div>
+
+      <!-- Stage 4 -->
+      <div class="stage">
+        <div class="top"><div class="num">4</div><h3>Re-scan</h3></div>
+        <div class="body">
+          <span class="model m-exec">SHELLGPT · LLaMA3:8B (stateless)</span>
+          <p>After an authorised patch is applied, Argus-AI re-executes the discovery
+          sequence against the changed surface, <strong>closing the loop</strong> and
+          producing a remediation-verified report.</p>
+          <div class="gate gate-good">✓ Confirms each fix actually resolved</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- closing return arrow -->
+    <div class="return">
+      <div class="track"></div>
+      <span class="cap-right"></span>
+      <span class="cap-left"></span>
+      <span class="arrow-up">◀</span>
+      <span class="label">LOOP REPEATS UNTIL NO CONFIRMED FINDING REMAINS</span>
+    </div>
+  </div>
+
+  <div class="notes">
+    <div class="note">
+      <h4>Why stateless discovery</h4>
+      <p>Stages 1 &amp; 4 use <strong>stateless single-shot prompts</strong> — the ShellGPT
+      <code>--shell</code> isolation property the thesis identifies as the mechanism enabling
+      reliable security-sensitive command generation, free of conversational guardrail
+      amplification.</p>
+    </div>
+    <div class="note">
+      <h4>Why validation gates everything</h4>
+      <p>An unverifiable finding never reaches Patch Proposal. A fabricated scan result
+      therefore <strong>cannot drive a fabricated patch</strong> — validation converts the
+      hallucination risk into a contained, auditable checkpoint.</p>
+    </div>
+    <div class="note">
+      <h4>Why it&rsquo;s privacy-first</h4>
+      <p>Aardvark and Claude Security upload source code and scan output to cloud inference.
+      Argus-AI runs the equivalent reasoning <strong>entirely on local LLMs</strong>, making it
+      deployable in regulated environments where the cloud tools are categorically prohibited.</p>
+    </div>
+  </div>
+
+  <footer>Argus-AI v0.1 &middot; built on the Privacy-First LLM Pentesting Framework (PLPF)
+  &middot; Discovery → Validation → Patch → Re-scan</footer>
+</div>
+</body>
+</html>

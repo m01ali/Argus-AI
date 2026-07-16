@@ -1,0 +1,10 @@
+# Argus-AI requires no third-party Python packages.
+# It uses only the Python 3.10+ standard library.
+#
+# External (non-pip) dependencies:
+#   - Ollama         https://ollama.com   (local LLM backend)
+#   - Security tools  nmap, nikto, sqlmap, searchsploit (on PATH; Kali Linux)
+#
+# Pull the models once:
+#   ollama pull llama3:8b
+#   ollama pull gemma3:12b
