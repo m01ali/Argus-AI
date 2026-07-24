@@ -1,0 +1,98 @@
+ARGUS-AI / VULHUB LAB — HOW TO RE-RUN AFTER A DEVICE RESTART
+==============================================================
+Run these in order. Verify each step before moving to the next.
+
+
+STEP 1 — Confirm Docker Desktop engine is running
+--------------------------------------------------
+docker ps
+
+If this errors, start Docker Desktop (Start Menu, or):
+& "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+Wait 30-60 seconds, then re-run "docker ps" until it returns cleanly.
+
+
+STEP 2 — Start Ollama bound to 0.0.0.0 (required so Docker can reach it)
+--------------------------------------------------------------------------
+Check first:
+netstat -an | findstr 11434
+
+If you see "0.0.0.0:11434  LISTENING" -> already good, skip to Step 3.
+
+If you see nothing, or only "127.0.0.1:11434":
+$env:OLLAMA_HOST = "0.0.0.0"
+ollama serve
+
+Leave that terminal window open (this IS the Ollama server now).
+Open a NEW terminal window for every step below.
+
+Verify again:
+netstat -an | findstr 11434
+-> must show 0.0.0.0:11434 LISTENING
+
+
+STEP 3 — Bring up the lab containers
+--------------------------------------
+cd d:/Argus-AI/vulhub-lab
+docker compose up -d
+docker compose ps
+
+Confirm all 5 services show "Up": target-a, target-b, target-c, target-d, kali
+(No --build needed unless a Dockerfile changed.)
+
+
+STEP 4 — Verify the container can reach Ollama
+-------------------------------------------------
+docker compose exec kali curl -s http://host.docker.internal:11434/api/tags
+
+Should print JSON listing llama3:8b and qwen3.5:9b.
+If empty or an error -> go back to Step 2. Do not continue until this works.
+
+
+STEP 5 — Shell into the scanner container
+--------------------------------------------
+docker compose exec kali bash
+
+
+STEP 6 — Run Argus against each target (inside the container shell)
+-----------------------------------------------------------------------
+python -m argus.cli --target target-a --authorize -v
+python -m argus.cli --target target-b --authorize -v
+python -m argus.cli --target target-c --authorize -v
+python -m argus.cli --target target-d --authorize -v
+
+Reports are written to: d:/Argus-AI/argus-reports/
+
+
+==============================================================
+OPTIONAL — RESET COMMANDS
+==============================================================
+
+Reset ONE target (undo any runtime config changes):
+docker compose stop target-a
+docker compose rm -f target-a
+docker compose up -d target-a
+(replace target-a with target-b / target-c / target-d as needed)
+
+Full reset of the whole lab (containers + network):
+docker compose down -v
+docker compose up -d --build
+
+
+==============================================================
+NOTES
+==============================================================
+- target-a = Redis (unauthenticated access)
+- target-b = Apache Solr (Log4Shell, CVE-2021-44228)
+- target-c = Drupal (Drupalgeddon2, CVE-2018-7600)
+- target-d = Struts2 (S2-045, CVE-2017-5638)
+  (Full private mapping/details: report/target-legend-PRIVATE.md
+   — do not reference that file's contents from inside the kali
+   container or from anything Argus-AI runs.)
+
+- Models used: llama3:8b (Discovery/Validation), qwen3.5:9b (Patch Proposal)
+- If a run times out during Patch Proposal, pre-warm the advisor model first:
+  curl -s http://host.docker.internal:11434/api/generate -d "{\"model\":\"qwen3.5:9b\",\"prompt\":\"hi\",\"stream\":false}" > $null
+
+- Full troubleshooting table and setup-from-scratch instructions:
+  vulhub-lab/README.md

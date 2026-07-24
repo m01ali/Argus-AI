@@ -1,0 +1,69 @@
+name: argus-vulhub-lab
+
+# Isolated bridge network — targets and the Kali scanner container talk to
+# each other by service name; nothing here is reachable from the LAN except
+# the host-loopback port mappings below (useful for eyeballing a web UI while
+# authorising a patch).
+#
+# IMPORTANT — service names are deliberately opaque (target-a/b/c/d), NOT
+# named after the software they run. Docker's embedded DNS gives every
+# container both a forward DNS name AND a reverse-DNS (PTR) record built from
+# the compose service name — a service literally named "redis" or "struts2"
+# leaks the answer to Discovery/Validation the instant they run a plain nmap
+# scan (rDNS shows up unprompted in nmap's own output). See
+# report/target-legend-PRIVATE.md for which opaque label maps to which CVE —
+# that file must never be read by, or referenced in, anything Argus-AI runs.
+networks:
+  pentestlab:
+    driver: bridge
+
+services:
+  target-a:
+    image: vulhub/redis:4.0.14
+    networks: [pentestlab]
+    ports:
+      - "127.0.0.1:6379:6379"
+
+  target-b:
+    image: vulhub/solr:8.11.0
+    networks: [pentestlab]
+    ports:
+      - "127.0.0.1:8983:8983"
+      - "127.0.0.1:5005:5005"
+
+  target-c:
+    image: vulhub/drupal:8.5.0
+    networks: [pentestlab]
+    ports:
+      - "127.0.0.1:8081:80"
+
+  target-d:
+    image: vulhub/struts2:2.3.30
+    networks: [pentestlab]
+    ports:
+      - "127.0.0.1:8082:8080"
+
+  # --- Attacker/scanner container ------------------------------------------
+  # Runs Argus-AI itself (Python 3.10+ stdlib only) plus the Kali tool
+  # allowlist Discovery/Validation are permitted to drive. Joined to the same
+  # network as the targets so it can reach them by opaque service name
+  # (target-a/b/c/d) without relying on host port mapping.
+  kali:
+    build: ./kali
+    networks: [pentestlab]
+    volumes:
+      - ../:/opt/argus-ai
+    working_dir: /opt/argus-ai
+    environment:
+      ARGUS_OLLAMA_HOST: "http://host.docker.internal:11434"
+      ARGUS_EXECUTOR_MODEL: "llama3:8b"
+      ARGUS_ADVISOR_MODEL: "qwen3.5:9b"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - target-a
+      - target-b
+      - target-c
+      - target-d
+    tty: true
+    stdin_open: true

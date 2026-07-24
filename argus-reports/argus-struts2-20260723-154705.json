@@ -1,0 +1,36 @@
+{
+  "target": "struts2",
+  "iterations": [
+    {
+      "iteration": 1,
+      "confirmed": 0,
+      "patched": 0,
+      "resolved": 0,
+      "findings": [
+        {
+          "target": "struts2",
+          "title": "Struts2 Detection",
+          "description": "The target host is running Struts2, which is a known vulnerable framework.",
+          "severity": "High",
+          "phase": "recon",
+          "discovery_commands": [
+            {
+              "rationale": "recon step",
+              "command": "nmap -p 80,443 --script=http-title,http-robots.txt,struts-stomp-detect struts2",
+              "phase": "recon",
+              "stdout": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-23 15:46 +0000\n",
+              "stderr": "NSE: failed to initialize the script engine:\n/usr/share/nmap/nse_main.lua:829: 'struts-stomp-detect' did not match a category, filename, or directory\nstack traceback:\n\t[C]: in function 'error'\n\t/usr/share/nmap/nse_main.lua:829: in local 'get_chosen_scripts'\n\t/usr/share/nmap/nse_main.lua:1364: in main chunk\n\t[C]: in ?\n\nQUITTING!\n",
+              "exit_code": 1
+            }
+          ],
+          "verdict": "unconfirmed",
+          "proof": "",
+          "patch_status": "n/a",
+          "remediation": "",
+          "resolved_after_patch": null,
+          "finding_id": "F-13718"
+        }
+      ]
+    }
+  ]
+}

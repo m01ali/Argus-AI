@@ -1,0 +1,12 @@
+{
+  "target": "redis",
+  "iterations": [
+    {
+      "iteration": 1,
+      "confirmed": 0,
+      "patched": 0,
+      "resolved": 0,
+      "findings": []
+    }
+  ]
+}

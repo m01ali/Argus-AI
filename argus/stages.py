@@ -3,7 +3,7 @@ The four Argus-AI stages.
 
     (1) Discovery       — ShellGPT-style stateless command generation + local tool execution
     (2) Validation      — exploit-verify each finding in an isolated sandbox; gate on proof
-    (3) Patch Proposal  — Gemma3:12B advisory remediation for confirmed findings only
+    (3) Patch Proposal  — Qwen3.5:9B advisory remediation for confirmed findings only
     (4) Re-scan         — re-run discovery against the changed surface, close the loop
 
 Each stage is a class with a single public `run(...)` method so the orchestrator
@@ -53,7 +53,9 @@ class DiscoveryStage:
         "Linux. Given a target and a PTES phase, output exactly ONE shell command "
         "that advances that phase. Output ONLY the command on a single line, no "
         "explanation, no markdown fences. Prefer: nmap, nikto, sqlmap, searchsploit, "
-        "whatweb, gobuster, enum4linux. Never use destructive flags."
+        "whatweb, gobuster, enum4linux. Never use destructive flags. Only use flags "
+        "and options you are certain exist for that exact tool; if you are not "
+        "certain, invoke the tool with no extra flags rather than guessing one."
     )
 
     def __init__(self, cfg: ArgusConfig, llm: OllamaClient) -> None:
@@ -131,9 +133,16 @@ class DiscoveryStage:
         if not cmd.stdout.strip():
             return None
         prompt = (
-            "Given this tool output, summarise any single security finding as JSON "
-            'with keys: title, description, severity (High/Medium/Low/Info). '
-            "If there is no finding, output {}. Output ONLY JSON.\n\n"
+            "Given this tool output, identify a security finding if one is present. "
+            "Treat any of the following as a finding worth reporting, even without "
+            "a specific CVE number: a network service exposed with no evidence "
+            "authentication is required or enabled; software identified by name and "
+            "version where that version is old enough to plausibly carry known "
+            "vulnerabilities; a verbose banner disclosing an exact product/version; "
+            "default or blank credentials; or directory/information disclosure. "
+            "Summarise the single most significant finding as JSON with keys: "
+            "title, description, severity (High/Medium/Low/Info). If none of the "
+            "above criteria are met, output {}. Output ONLY JSON.\n\n"
             f"Command: {cmd.command}\nOutput:\n{cmd.stdout[:4000]}"
         )
         raw = self.llm.generate(
@@ -183,7 +192,9 @@ class ValidationStage:
     def _verify(self, f: Finding) -> tuple[ValidationVerdict, str]:
         prompt = (
             f"Finding: {f.title}\nTarget: {f.target}\nDescription: {f.description}\n"
-            "Give one safe command that verifies whether this is real."
+            f"Give one safe command that verifies whether this is real. The command "
+            f"MUST run against the literal target string \"{f.target}\" given above — "
+            f"never substitute localhost, 127.0.0.1, or any other placeholder."
         )
         raw = self.llm.generate(
             self.cfg.models.executor_model, prompt,
@@ -228,9 +239,10 @@ class ValidationStage:
 # ─────────────────────────────────────────────────────────────────────────────
 class PatchProposalStage:
     """
-    Gemma3:12B in advisory mode (PLPF Outcome B) drafts structured remediation
+    Qwen3.5:9B in advisory mode (PLPF Outcome B) drafts structured remediation
     for CONFIRMED findings only. The advisor never executes anything — it
-    side-steps Gemma's self-execution failure mode by staying purely analytical.
+    side-steps the self-execution failure mode observed in prior advisory
+    models by staying purely analytical.
     """
 
     SYSTEM = (

@@ -1,0 +1,121 @@
+{
+  "target": "target-b",
+  "iterations": [
+    {
+      "iteration": 1,
+      "confirmed": 1,
+      "patched": 0,
+      "resolved": 0,
+      "findings": [
+        {
+          "target": "target-b",
+          "title": "Apache Solr Default Credentials",
+          "description": "The Apache Solr service on port 8983 is exposed with no evidence of authentication being required or enabled.",
+          "severity": "Medium",
+          "phase": "scan",
+          "discovery_commands": [
+            {
+              "rationale": "scan step",
+              "command": "nmap -sV -p- target-b",
+              "phase": "scan",
+              "stdout": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-23 19:37 +0000\nNmap scan report for target-b (172.18.0.5)\nHost is up (0.0000050s latency).\nrDNS record for 172.18.0.5: argus-vulhub-lab-target-b-1.argus-vulhub-lab_pentestlab\nNot shown: 65533 closed tcp ports (reset)\nPORT     STATE SERVICE VERSION\n5005/tcp open  jdwp    Java Debug Wire Protocol (Reference Implementation) version 1.8 1.8.0_102\n8983/tcp open  http    Apache Solr\nMAC Address: 16:79:96:D0:72:4E (Unknown)\n\nService detection performed. Please report any incorrect results at https://nmap.org/submit/ .\nNmap done: 1 IP address (1 host up) scanned in 12.65 seconds\n",
+              "stderr": "",
+              "exit_code": 0
+            }
+          ],
+          "verdict": "confirmed",
+          "proof": "{\n  \"responseHeader\":{\n    \"status\":0,\n    \"QTime\":0},\n  \"initFailures\":{},\n  \"status\":{\n    \"demo\":{\n      \"name\":\"demo\",\n      \"instanceDir\":\"/opt/solr/server/solr/demo\",\n      \"dataDir\":\"/opt/solr/server/solr/demo/data/\",\n      \"config\":\"solrconfig.xml\",\n      \"schema\":\"managed-schema\",\n      \"startTime\":\"2026-07-23T16:05:54.417Z\",\n      \"uptime\":10717275,\n      \"index\":{\n        \"numDocs\":46,\n        \"maxDoc\":46,\n        \"deletedDocs\":0,\n        \"indexHeapUsageBytes\":6116,\n        \"version\":6,\n        \"segmentCount\":1,\n        \"current\":true,\n        \"hasDeletions\":false,\n        \"directory\":\"org.apache.lucene.store.NRTCachingDirectory:NRTCachingDirectory(MMapDirectory@/opt/solr/server/solr/demo/data/index lockFactory=org.apache.lucene.store.NativeFSLockFactory@1ce19903; maxCacheMB=48.0 maxMergeSizeMB=4.0)\",\n        \"segmentsFile\":\"segments_2\",\n        \"segmentsFileSizeInBytes\":220,\n        \"userData\":{\n          \"commitCommandVer\":\"1871522299604107264\",\n          \"commitTimeMSec\":\"1784822749714\"},\n        \"lastModified\":\"2026-07-23T16:05:49.714Z\",\n        \"sizeInBytes\":34224,\n        \"size\":\"33.42 KB\"}}}}\n",
+          "patch_status": "rejected",
+          "remediation": "1) Configuration\n*   **Enable Authentication:** Create and deploy a `security.json` file in `$SOLR_HOME/conf/` (specifically `/opt/solr/server/conf/security.json`) to enable Solr\u2019s built-in security plugin. Ensure `\"authentication\": true`, `\"authorization\": true`, and define specific users with restricted roles for the admin interface (`/admin/*`).\n*   **Restrict Admin Endpoints:** In `security.json` or via Jetty realm configuration (if legacy), explicitly deny anonymous access to administrative endpoints such as `/solr/admin/info/system`, `/solr/admin/mbeans`, and `/solr/update`. Set permissions so that only authenticated users with specific roles can execute write operations.\n*   **Disable Demo Collection:** If the `demo` collection is not required for production, remove it via configuration or delete its index directory (`/opt/solr/server/solr/demo/data/index`). If retention is necessary, configure access control to allow read-only public access while blocking all update/delete permissions without authentication.\n*   **Update Jetty Realm (Legacy):** If using older Solr versions relying on `jetty.xml`, ensure the realm file (`/opt/solr/server/conf/jetty-realm.xml`) contains valid credentials and restricts `/solr/admin/*` paths to specific users, removing any default anonymous access grants.\n\n2) Package/Version\n*   **Upgrade Apache Solr:** Upgrade target-b from its current version (likely a legacy or unpatched release given the lack of security enforcement) to the latest stable Long-Term Support (LTS) release available in your repository (e.g., Solr 8.x+). Newer versions enforce stricter default authentication policies and mitigate known vulnerabilities related to unauthorized access.\n*   **Verify Security Patches:** Ensure that all Apache Solr packages are updated via your package manager (`yum`, `apt`) or internal artifact registry to include the latest security patches regarding credential handling and plugin isolation (e.g., ensuring Groovy/Python scripting plugins remain disabled by default).\n\n3) Code-level\n*   **Audit Handler Definitions:** Review `/opt/solr/server/conf/solrconfig.xml` for any custom `requestHandler` definitions that might bypass standard authentication checks. Remove or restrict handlers that expose internal system information without requiring a login token.\n*   **Disable Scripting Gadgets:** Ensure no external scripting plugins (such as Groovy, Python, or JavaScript executors) are enabled in the Solr configuration files (`solrconfig.xml`), as these can be exploited for Remote Code Execution if authentication is not strictly enforced on their endpoints.\n*   **Implement Custom Access Control Logic:** If custom logic exists within handlers to manage access (e.g., via `requestParams` or filters), update them to validate user identity against the security realm before processing requests, ensuring no hardcoded credentials are present in source code repositories associated with target-b.",
+          "resolved_after_patch": null,
+          "finding_id": "F-37700"
+        }
+      ]
+    },
+    {
+      "iteration": 2,
+      "confirmed": 1,
+      "patched": 1,
+      "resolved": 0,
+      "findings": [
+        {
+          "target": "target-b",
+          "title": "Apache Solr Default Credentials",
+          "description": "The Apache Solr service on port 8983 is exposed with no evidence of authentication being required or enabled.",
+          "severity": "Medium",
+          "phase": "scan",
+          "discovery_commands": [
+            {
+              "rationale": "scan step",
+              "command": "nmap -sV -p- target-b",
+              "phase": "scan",
+              "stdout": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-23 19:45 +0000\nNmap scan report for target-b (172.18.0.5)\nHost is up (0.0000050s latency).\nrDNS record for 172.18.0.5: argus-vulhub-lab-target-b-1.argus-vulhub-lab_pentestlab\nNot shown: 65533 closed tcp ports (reset)\nPORT     STATE SERVICE VERSION\n5005/tcp open  jdwp    Java Debug Wire Protocol (Reference Implementation) version 1.8 1.8.0_102\n8983/tcp open  http    Apache Solr\nMAC Address: 16:79:96:D0:72:4E (Unknown)\n\nService detection performed. Please report any incorrect results at https://nmap.org/submit/ .\nNmap done: 1 IP address (1 host up) scanned in 13.01 seconds\n",
+              "stderr": "",
+              "exit_code": 0
+            }
+          ],
+          "verdict": "confirmed",
+          "proof": "{\n  \"responseHeader\":{\n    \"status\":0,\n    \"QTime\":0},\n  \"initFailures\":{},\n  \"status\":{\n    \"demo\":{\n      \"name\":\"demo\",\n      \"instanceDir\":\"/opt/solr/server/solr/demo\",\n      \"dataDir\":\"/opt/solr/server/solr/demo/data/\",\n      \"config\":\"solrconfig.xml\",\n      \"schema\":\"managed-schema\",\n      \"startTime\":\"2026-07-23T16:05:54.417Z\",\n      \"uptime\":11273388,\n      \"index\":{\n        \"numDocs\":46,\n        \"maxDoc\":46,\n        \"deletedDocs\":0,\n        \"indexHeapUsageBytes\":6116,\n        \"version\":6,\n        \"segmentCount\":1,\n        \"current\":true,\n        \"hasDeletions\":false,\n        \"directory\":\"org.apache.lucene.store.NRTCachingDirectory:NRTCachingDirectory(MMapDirectory@/opt/solr/server/solr/demo/data/index lockFactory=org.apache.lucene.store.NativeFSLockFactory@1ce19903; maxCacheMB=48.0 maxMergeSizeMB=4.0)\",\n        \"segmentsFile\":\"segments_2\",\n        \"segmentsFileSizeInBytes\":220,\n        \"userData\":{\n          \"commitCommandVer\":\"1871522299604107264\",\n          \"commitTimeMSec\":\"1784822749714\"},\n        \"lastModified\":\"2026-07-23T16:05:49.714Z\",\n        \"sizeInBytes\":34224,\n        \"size\":\"33.42 KB\"}}}}\n",
+          "patch_status": "applied",
+          "remediation": "1) Configuration\n*   **Enable Jetty Authentication:** Create the security realm directory and files at `/etc/solr/security/`. Generate a hashed password for an administrative user (e.g., `admin`) using Solr's built-in hashing tool or standard SHA-256 tools, then save to `/etc/solr/security/users.properties` in format:\n    ```properties\n    admin:$2a$10$<hashed_password_string>\n    ```\n*   **Apply Security Realm:** Configure the Jetty security realm by creating/editing `/opt/solr/server/jetty-security.xml`. Ensure this file restricts access to all Solr paths (`/solr/*`, `/admin/*`) requiring authentication. Reference the `users.properties` created above and set `<Realm>` constraints for HTTP Basic Auth or LDAP depending on your environment requirements.\n*   **Disable Default Demo Core:** Locate the core definition files (often found in `/opt/solr/server/solr/core.properties` or within the Solr home configuration). Remove \"demo\" from the list of enabled cores if it is not required for production operations, OR delete its data directory to prevent access:\n    ```bash\n    rm -rf /opt/solr/server/solr/demo/data/*\n    # Ensure core definition in solrconfig.xml or startup args excludes 'demo'\n    ```\n*   **Restrict Admin Endpoints:** In `/etc/solr/security/jetty-security.xml`, explicitly deny access to sensitive system endpoints (like `system` info) if not required, and ensure the admin interface is only accessible via authenticated sessions.\n\n2) Package/Version\n*   **Update Solr Version:** Ensure Apache Solr version 8.x or later is installed on target-b. Older versions may lack robust security plugin support by default. Use your package manager to upgrade:\n    ```bash\n    apt-get update && apt-get install --only-upgrade solr # Or equivalent for yum/dnf\n    ```\n*   **Verify Security Patches:** Check the Apache Solr release notes and CVE database (e.g., NVD) for any known vulnerabilities related to authentication bypasses or default credential exposure in your current version. Upgrade immediately if a patch is available that addresses security flaws regarding access control lists.\n\n3) Code-level\n*   **Audit `solrconfig.xml`:** Review the main configuration file at `/opt/solr/server/solr/demo/conf/solrconfig.xml` (and other core configs). Ensure there are no custom request handlers (`<requestHandler>` tags) that allow unauthenticated write access to indexes. Remove any `<updateHandler>` or `streamUpdateConfigRequestProcessorFactory` configurations that might be exposed without authentication checks in the security realm configuration.\n*   **Remove Hardcoded Credentials:** Search application code and deployment scripts for hardcoded Solr API keys, tokens, or passwords used within client applications connecting to target-b. Replace these with environment variables",
+          "resolved_after_patch": false,
+          "finding_id": "F-71709"
+        }
+      ]
+    },
+    {
+      "iteration": 3,
+      "confirmed": 2,
+      "patched": 2,
+      "resolved": 0,
+      "findings": [
+        {
+          "target": "target-b",
+          "title": "Apache Solr Default Credentials",
+          "description": "The Apache Solr service on port 8983 is exposed with no evidence of authentication being required or enabled.",
+          "severity": "Medium",
+          "phase": "recon",
+          "discovery_commands": [
+            {
+              "rationale": "recon step",
+              "command": "nmap -sV -p- target-b",
+              "phase": "recon",
+              "stdout": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-23 19:51 +0000\nNmap scan report for target-b (172.18.0.5)\nHost is up (0.0000050s latency).\nrDNS record for 172.18.0.5: argus-vulhub-lab-target-b-1.argus-vulhub-lab_pentestlab\nNot shown: 65533 closed tcp ports (reset)\nPORT     STATE SERVICE VERSION\n5005/tcp open  jdwp    Java Debug Wire Protocol (Reference Implementation) version 1.8 1.8.0_102\n8983/tcp open  http    Apache Solr\nMAC Address: 16:79:96:D0:72:4E (Unknown)\n\nService detection performed. Please report any incorrect results at https://nmap.org/submit/ .\nNmap done: 1 IP address (1 host up) scanned in 12.79 seconds\n",
+              "stderr": "",
+              "exit_code": 0
+            }
+          ],
+          "verdict": "confirmed",
+          "proof": "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">\n<html ng-app=\"solrAdminApp\" ng-csp>\n<!--\nLicensed to the Apache Software Foundation (ASF) under one or more\ncontributor license agreements.  See the NOTICE file distributed with\nthis work for additional information regarding copyright ownership.\nThe ASF licenses this file to You under the Apache License, Version 2.0\n(the \"License\"); you may not use this file except in compliance with\nthe License.  You may obtain a copy of the License at\n\nhttp://www.apache.org/licenses/LICENSE-2.0\n\nUnless required by applicable law or agreed to in writing, software\ndistributed under the License is distributed on an \"AS IS\" BASIS,\nWITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\nSee the License for the specific language governing permissions and\nlimitations under the License.\n-->\n\n<head>\n  <title>Solr Admin</title>\n\n  <link rel=\"icon\" type=\"image/x-icon\" href=\"img/favicon.ico?_=8.11.0\">\n  <link rel=\"shortcut icon\" type=\"image/x-icon\" href=\"img/favicon.ico?_=8.11.0\">\n\n  <link rel=\"stylesheet\" type=\"text/css\" href=\"css/angular/angular-csp.css?_=8.11.0\">\n  <link rel=\"stylesheet\" type=\"text/css\" href=\"css/angular/common.css?_=8.11.0\">\n  <link rel=\"stylesheet\" type=\"text/css\" href=\"css/angular/analysis.css?_=8.11.0\">\n  <link rel=\"stylesheet\" type=\"text/css\" href=\"css/angular/schema-designer.css?_=8.11.0\">\n  <link rel=\"stylesheet\" type=\"text/css\" href=\"css/angular/security.css?_=8.11.0\">",
+          "patch_status": "applied",
+          "remediation": "",
+          "resolved_after_patch": false,
+          "finding_id": "F-09907"
+        },
+        {
+          "target": "target-b",
+          "title": "Apache Solr Default Credentials",
+          "description": "The Apache Solr service on port 8983 is exposed with no evidence of authentication being required or enabled.",
+          "severity": "Medium",
+          "phase": "scan",
+          "discovery_commands": [
+            {
+              "rationale": "scan step",
+              "command": "nmap -sV -p- target-b",
+              "phase": "scan",
+              "stdout": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-23 19:51 +0000\nNmap scan report for target-b (172.18.0.5)\nHost is up (0.0000050s latency).\nrDNS record for 172.18.0.5: argus-vulhub-lab-target-b-1.argus-vulhub-lab_pentestlab\nNot shown: 65533 closed tcp ports (reset)\nPORT     STATE SERVICE VERSION\n5005/tcp open  jdwp    Java Debug Wire Protocol (Reference Implementation) version 1.8 1.8.0_102\n8983/tcp open  http    Apache Solr\nMAC Address: 16:79:96:D0:72:4E (Unknown)\n\nService detection performed. Please report any incorrect results at https://nmap.org/submit/ .\nNmap done: 1 IP address (1 host up) scanned in 12.63 seconds\n",
+              "stderr": "",
+              "exit_code": 0
+            }
+          ],
+          "verdict": "confirmed",
+          "proof": "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">\n<html ng-app=\"solrAdminApp\" ng-csp>\n<!--\nLicensed to the Apache Software Foundation (ASF) under one or more\ncontributor license agreements.  See the NOTICE file distributed with\nthis work for additional information regarding copyright ownership.\nThe ASF licenses this file to You under the Apache License, Version 2.0\n(the \"License\"); you may not use this file except in compliance with\nthe License.  You may obtain a copy of the License at\n\nhttp://www.apache.org/licenses/LICENSE-2.0\n\nUnless required by applicable law or agreed to in writing, software\ndistributed under the License is distributed on an \"AS IS\" BASIS,\nWITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\nSee the License for the specific language governing permissions and\nlimitations under the License.\n-->\n\n<head>\n  <title>Solr Admin</title>\n\n  <link rel=\"icon\" type=\"image/x-icon\" href=\"img/favicon.ico?_=8.11.0\">\n  <link rel=\"shortcut icon\" type=\"image/x-icon\" href=\"img/favicon.ico?_=8.11.0\">\n\n  <link rel=\"stylesheet\" type=\"text/css\" href=\"css/angular/angular-csp.css?_=8.11.0\">\n  <link rel=\"stylesheet\" type=\"text/css\" href=\"css/angular/common.css?_=8.11.0\">\n  <link rel=\"stylesheet\" type=\"text/css\" href=\"css/angular/analysis.css?_=8.11.0\">\n  <link rel=\"stylesheet\" type=\"text/css\" href=\"css/angular/schema-designer.css?_=8.11.0\">\n  <link rel=\"stylesheet\" type=\"text/css\" href=\"css/angular/security.css?_=8.11.0\">",
+          "patch_status": "applied",
+          "remediation": "1) Configuration\n*   **Enable Authentication in `solrconfig.xml`:** Locate the configuration directory (typically `$SOLR_HOME/conf/solrconfig.xml`). Add a `<security>` block to enforce authentication for all request handlers, specifically ensuring that `/admin/*` and API endpoints are protected. If using Solr 8.x or later with Jetty Realm support, create the file `jetty-realm.properties` in `$SOLR_HOME/server/solr/security/`. Populate this file with valid usernames (e.g., `solr_admin`) and hashed passwords for administrative access.\n*   **Update Startup Flags:** Ensure your Solr startup script or systemd service unit includes flags to enable",
+          "resolved_after_patch": false,
+          "finding_id": "F-23722"
+        }
+      ]
+    }
+  ]
+}

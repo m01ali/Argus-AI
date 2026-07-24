@@ -1,0 +1,59 @@
+{
+  "target": "solr",
+  "iterations": [
+    {
+      "iteration": 1,
+      "confirmed": 0,
+      "patched": 0,
+      "resolved": 0,
+      "findings": [
+        {
+          "target": "solr",
+          "title": "Solr Port 8983 Exposed",
+          "description": "Port 8983 is open on the Solr server, but no evidence of authentication or encryption is required/enabled.",
+          "severity": "Medium",
+          "phase": "recon",
+          "discovery_commands": [
+            {
+              "rationale": "recon step",
+              "command": "nmap -p 8983 solr",
+              "phase": "recon",
+              "stdout": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-23 15:23 +0000\nNmap scan report for solr (172.18.0.5)\nHost is up (0.000082s latency).\nrDNS record for 172.18.0.5: argus-vulhub-lab-solr-1.argus-vulhub-lab_pentestlab\n\nPORT     STATE SERVICE\n8983/tcp open  unknown\nMAC Address: 8A:D2:E9:3A:01:EB (Unknown)\n\nNmap done: 1 IP address (1 host up) scanned in 0.34 seconds\n",
+              "stderr": "",
+              "exit_code": 0
+            }
+          ],
+          "verdict": "unconfirmed",
+          "proof": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-23 15:23 +0000\nNmap scan report for solr (172.18.0.5)\nHost is up (0.000073s latency).\nrDNS record for 172.18.0.5: argus-vulhub-lab-solr-1.argus-vulhub-lab_pentestlab\n\nPORT     STATE SERVICE\n8983/tcp open  unknown\nMAC Address: 8A:D2:E9:3A:01:EB (Unknown)\n\nNmap done: 1 IP address (1 host up) scanned in 0.64 seconds\n",
+          "patch_status": "n/a",
+          "remediation": "",
+          "resolved_after_patch": null,
+          "finding_id": "F-29250"
+        },
+        {
+          "target": "solr",
+          "title": "Solr Service Exposed",
+          "description": "The Solr service is exposed on port 8983, but there is no evidence of authentication being required or enabled.",
+          "severity": "Medium",
+          "phase": "scan",
+          "discovery_commands": [
+            {
+              "rationale": "scan step",
+              "command": "nmap -p 8983 solr",
+              "phase": "scan",
+              "stdout": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-23 15:23 +0000\nNmap scan report for solr (172.18.0.5)\nHost is up (0.000050s latency).\nrDNS record for 172.18.0.5: argus-vulhub-lab-solr-1.argus-vulhub-lab_pentestlab\n\nPORT     STATE SERVICE\n8983/tcp open  unknown\nMAC Address: 8A:D2:E9:3A:01:EB (Unknown)\n\nNmap done: 1 IP address (1 host up) scanned in 0.64 seconds\n",
+              "stderr": "",
+              "exit_code": 0
+            }
+          ],
+          "verdict": "unconfirmed",
+          "proof": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-23 15:23 +0000\n",
+          "patch_status": "n/a",
+          "remediation": "",
+          "resolved_after_patch": null,
+          "finding_id": "F-31917"
+        }
+      ]
+    }
+  ]
+}

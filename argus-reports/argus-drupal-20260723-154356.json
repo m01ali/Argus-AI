@@ -1,0 +1,167 @@
+{
+  "target": "drupal",
+  "iterations": [
+    {
+      "iteration": 1,
+      "confirmed": 2,
+      "patched": 2,
+      "resolved": 0,
+      "findings": [
+        {
+          "target": "drupal",
+          "title": "Drupal Installation Page Exposed",
+          "description": "The Drupal installation page is exposed at /core/install.php, which may indicate a misconfigured or unpatched installation.",
+          "severity": "Medium",
+          "phase": "recon",
+          "discovery_commands": [
+            {
+              "rationale": "recon step",
+              "command": "nmap -p 80,443 --script=http-title,http-robots.txt drupal",
+              "phase": "recon",
+              "stdout": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-23 15:29 +0000\nNmap scan report for drupal (172.18.0.4)\nHost is up (0.000093s latency).\nrDNS record for 172.18.0.4: argus-vulhub-lab-drupal-1.argus-vulhub-lab_pentestlab\n\nPORT    STATE  SERVICE\n80/tcp  open   http\n| http-title: Choose language | Drupal\n|_Requested resource was /core/install.php\n| http-robots.txt: 22 disallowed entries (15 shown)\n| /core/ /profiles/ /README.txt /web.config /admin/ \n| /comment/reply/ /filter/tips/ /node/add/ /search/ /user/register/ \n| /user/password/ /user/login/ /user/logout/ /index.php/admin/ \n|_/index.php/comment/reply/\n443/tcp closed https\nMAC Address: 3A:68:4C:26:65:E7 (Unknown)\n\nNmap done: 1 IP address (1 host up) scanned in -0.05 seconds\n",
+              "stderr": "",
+              "exit_code": 0
+            }
+          ],
+          "verdict": "confirmed",
+          "proof": "HTTP/1.0 200 OK\nDate: Thu, 23 Jul 2026 15:29:14 GMT\nServer: Apache/2.4.25 (Debian)\nX-Powered-By: PHP/7.2.3\nCache-Control: must-revalidate, no-cache, private\nExpires: Sun, 19 Nov 1978 05:00:00 GMT\nLast-Modified: Thu, 23 Jul 2026 15:29:14 +0000\nETag: \"1784820554\"\nConnection: close\nContent-Type: text/html; charset=UTF-8\n\n",
+          "patch_status": "applied",
+          "remediation": "1) Configuration\n*   **Block Access to Install Script:** Edit your web server configuration files immediately to deny access to `/core/install.php`. \n    *   If using `.htaccess` in both the document root and `sites/default`, add the following directive:\n        ```apache",
+          "resolved_after_patch": false,
+          "finding_id": "F-49837"
+        },
+        {
+          "target": "drupal",
+          "title": "Drupal Installation Page Exposed",
+          "description": "The Drupal installation page is exposed at /core/install.php, which may indicate a misconfigured or unpatched installation.",
+          "severity": "Medium",
+          "phase": "scan",
+          "discovery_commands": [
+            {
+              "rationale": "scan step",
+              "command": "nmap -p 80,443 --script \"http-title,http-robots.txt\" drupal",
+              "phase": "scan",
+              "stdout": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-23 15:29 +0000\nNmap scan report for drupal (172.18.0.4)\nHost is up (0.000072s latency).\nrDNS record for 172.18.0.4: argus-vulhub-lab-drupal-1.argus-vulhub-lab_pentestlab\n\nPORT    STATE  SERVICE\n80/tcp  open   http\n| http-title: Choose language | Drupal\n|_Requested resource was /core/install.php\n| http-robots.txt: 22 disallowed entries (15 shown)\n| /core/ /profiles/ /README.txt /web.config /admin/ \n| /comment/reply/ /filter/tips/ /node/add/ /search/ /user/register/ \n| /user/password/ /user/login/ /user/logout/ /index.php/admin/ \n|_/index.php/comment/reply/\n443/tcp closed https\nMAC Address: 3A:68:4C:26:65:E7 (Unknown)\n\nNmap done: 1 IP address (1 host up) scanned in 0.80 seconds\n",
+              "stderr": "",
+              "exit_code": 0
+            }
+          ],
+          "verdict": "confirmed",
+          "proof": "HTTP/1.0 200 OK\nDate: Thu, 23 Jul 2026 15:29:15 GMT\nServer: Apache/2.4.25 (Debian)\nX-Powered-By: PHP/7.2.3\nCache-Control: must-revalidate, no-cache, private\nExpires: Sun, 19 Nov 1978 05:00:00 GMT\nLast-Modified: Thu, 23 Jul 2026 15:29:15 +0000\nETag: \"1784820555\"\nConnection: close\nContent-Type: text/html; charset=UTF-8\n\n",
+          "patch_status": "applied",
+          "remediation": "1) Configuration\n*   **Block Access via Web Server Rules:** Immediately restrict access to sensitive Drupal paths using Apache configuration or `.htaccess`. Add a rule in your root directory's `.htaccess` file (or VirtualHost config if you have one) to explicitly deny all requests for the installation script. Insert the following directive before any other rules:\n    ```apache\n    <FilesMatch \"^/core/install\\.php$\">\n        Require denied\n    </FilesMatch>\n    # If using mod_rewrite, ensure this rule is processed early\n    RewriteRule ^core/install.php - [F,L]\n    ```\n*   **Secure Sensitive Paths:** Ensure your `.htaccess` or `httpd.conf` does not expose other sensitive paths (e.g., `/update`, `/phpinfo`) alongside the installer. Add a global directive to deny access to core files that should remain hidden in production:\n    ```apache\n    <FilesMatch \"^/core/(install|upgrade)\\.(php)$\">\n        Require denied\n    </FilesMatch>\n    ```\n\n2) Package/Version\n*   **Upgrade PHP Runtime:** The headers indicate `PHP/7.2.3`, which is End-of-Life (EOL). This version contains multiple critical vulnerabilities unrelated to the install page but increases overall attack surface. Upgrade immediately to a supported Long-Term Support (LTS) release, such as **PHP 8.x** or at minimum PHP 7.4 with security patches applied if an upgrade path exists for your modules.\n*   **Update Drupal Core:** Ensure you are running the latest stable LTS version of Drupal core. Older versions may have known vulnerabilities in `install.php` logic that allow privilege escalation during installation. Verify via Composer (`composer update drupal/core`) or manual download and replace files, ensuring database backups exist first.\n*   **Patch Web Server:** The server is identified as Apache 2.4.25 (Debian). This version has known security issues regarding module handling and logging. Upgrade to the latest patched Debian release for your distribution or apply necessary CVE patches via `apt upgrade` before proceeding with Drupal upgrades.\n\n3) Code-level\n*   **Enforce Production Environment Checks:** Modify `sites/default/settings.php` to explicitly block access if running in a production environment, preventing accidental exposure during deployment failures. Add the following logic at the top of your settings file (before database connection):\n    ```php\n    // Block installer path specifically for production environments",
+          "resolved_after_patch": false,
+          "finding_id": "F-52927"
+        }
+      ]
+    },
+    {
+      "iteration": 2,
+      "confirmed": 2,
+      "patched": 2,
+      "resolved": 0,
+      "findings": [
+        {
+          "target": "drupal",
+          "title": "Drupal Installation Page Exposed",
+          "description": "The Drupal installation page is exposed at /core/install.php, which may indicate a misconfigured or unpatched installation.",
+          "severity": "Medium",
+          "phase": "recon",
+          "discovery_commands": [
+            {
+              "rationale": "recon step",
+              "command": "nmap -p 80,443 --script \"http-title,http-robots.txt\" drupal",
+              "phase": "recon",
+              "stdout": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-23 15:34 +0000\nNmap scan report for drupal (172.18.0.4)\nHost is up (0.000088s latency).\nrDNS record for 172.18.0.4: argus-vulhub-lab-drupal-1.argus-vulhub-lab_pentestlab\n\nPORT    STATE  SERVICE\n80/tcp  open   http\n| http-title: Choose language | Drupal\n|_Requested resource was /core/install.php\n| http-robots.txt: 22 disallowed entries (15 shown)\n| /core/ /profiles/ /README.txt /web.config /admin/ \n| /comment/reply/ /filter/tips/ /node/add/ /search/ /user/register/ \n| /user/password/ /user/login/ /user/logout/ /index.php/admin/ \n|_/index.php/comment/reply/\n443/tcp closed https\nMAC Address: 3A:68:4C:26:65:E7 (Unknown)\n\nNmap done: 1 IP address (1 host up) scanned in 0.78 seconds\n",
+              "stderr": "",
+              "exit_code": 0
+            }
+          ],
+          "verdict": "confirmed",
+          "proof": "HTTP/1.0 200 OK\nDate: Thu, 23 Jul 2026 15:34:22 GMT\nServer: Apache/2.4.25 (Debian)\nX-Powered-By: PHP/7.2.3\nCache-Control: must-revalidate, no-cache, private\nExpires: Sun, 19 Nov 1978 05:00:00 GMT\nLast-Modified: Thu, 23 Jul 2026 15:34:22 +0000\nETag: \"1784820862\"\nConnection: close\nContent-Type: text/html; charset=UTF-8\n\n",
+          "patch_status": "applied",
+          "remediation": "1) Configuration\n*   **Block Access at Web Server Level:** Immediately restrict access to the installation endpoint using Apache configuration. Add a `Deny from All` rule specifically for `/install/`. In your root `.htaccess`, insert: `<FilesMatch \"^.*\\.php$\">Require all granted</Files>` (ensure this is not blocking install.php) but add specific deny rules if needed, or better yet, use the VirtualHost configuration to block access.\n    ```apache\n    <Location /install>\n        Require all denied\n    </Location>\n    ```\n*   **Verify Site State:** Ensure the Drupal site has been fully installed and migrated from a development state. If this is an uninstalled instance in production, complete the installation process via CLI (`drush updb` or `php bin/drupal install`) to ensure database tables are populated correctly so that `/core/install.php` redirects appropriately rather than serving raw HTML content.\n*   **WAF Rules:** Configure your Web Application Firewall (e.g., ModSecurity) to block requests targeting known Drupal installation paths (`/install`, `/update.php`).\n\n2) Package/Version\n*   **Upgrade PHP Runtime:** The headers indicate `PHP/7.2.3`. This version reached End-of-Life in December 2019 and is vulnerable to multiple CVEs (e.g., buffer overflows, memory corruption). Upgrade immediately to a supported LTS release such as PHP 8.x or the latest stable minor version available for your Debian distribution (`apt update && apt upgrade php*`).\n*   **Upgrade Drupal Core:** Ensure you are running a supported major version of Drupal. If currently on an older unsupported core (e.g., Drupal 7), plan migration to Drupal 10 LTS immediately, as it includes hardened defaults that prevent accidental exposure of installation endpoints in production environments. Update all contributed modules and themes to their latest stable versions compatible with the new PHP/Core stack.\n*   **Update Apache:** Upgrade `Apache/2.4.25` (Debian) via package manager (`apt upgrade apache2`) to a version patched against known vulnerabilities, ensuring modern security headers like HSTS are enabled in your configuration.\n\n3) Code-level\n*   **Audit settings.php:** Review the production instance of `sites/default/settings.php`. Ensure no environment variables or custom logic force Drupal into an \"install profile\" state on live servers. Remove any lines that might inadvertently allow installation mode execution, such as `$conf['install_profile'] = 'standard'` unless explicitly required for a specific workflow (which should be restricted to CI/CD pipelines).\n*   **Check Custom Modules:** Audit custom modules or themes installed in `sites/all/modules/custom`. Ensure no code overrides the installer path logic (`hook_install()`) that might expose functionality during maintenance mode. If using Composer, ensure dependencies do not include vulnerable versions of Drupal core paths.\n*   **Enforce Maintenance Mode Logic:** Verify that your production environment correctly sets `$conf['maintenance_mode']` to `TRUE` if installation is interrupted or pending upgrade. This prevents the installer from being triggered by user requests during critical maintenance windows.",
+          "resolved_after_patch": false,
+          "finding_id": "F-58536"
+        },
+        {
+          "target": "drupal",
+          "title": "Drupal Installation Page Exposed",
+          "description": "The Drupal installation page is exposed at /core/install.php, which may indicate a misconfigured or unpatched installation.",
+          "severity": "Medium",
+          "phase": "scan",
+          "discovery_commands": [
+            {
+              "rationale": "scan step",
+              "command": "nmap -p 80,443 --script \"http-title,http-robots.txt\" drupal",
+              "phase": "scan",
+              "stdout": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-23 15:34 +0000\nNmap scan report for drupal (172.18.0.4)\nHost is up (0.000062s latency).\nrDNS record for 172.18.0.4: argus-vulhub-lab-drupal-1.argus-vulhub-lab_pentestlab\n\nPORT    STATE  SERVICE\n80/tcp  open   http\n| http-title: Choose language | Drupal\n|_Requested resource was /core/install.php\n| http-robots.txt: 22 disallowed entries (15 shown)\n| /core/ /profiles/ /README.txt /web.config /admin/ \n| /comment/reply/ /filter/tips/ /node/add/ /search/ /user/register/ \n| /user/password/ /user/login/ /user/logout/ /index.php/admin/ \n|_/index.php/comment/reply/\n443/tcp closed https\nMAC Address: 3A:68:4C:26:65:E7 (Unknown)\n\nNmap done: 1 IP address (1 host up) scanned in 0.79 seconds\n",
+              "stderr": "",
+              "exit_code": 0
+            }
+          ],
+          "verdict": "confirmed",
+          "proof": "HTTP/1.0 200 OK\nDate: Thu, 23 Jul 2026 15:34:24 GMT\nServer: Apache/2.4.25 (Debian)\nX-Powered-By: PHP/7.2.3\nCache-Control: must-revalidate, no-cache, private\nExpires: Sun, 19 Nov 1978 05:00:00 GMT\nLast-Modified: Thu, 23 Jul 2026 15:34:24 +0000\nETag: \"1784820864\"\nConnection: close\nContent-Type: text/html; charset=UTF-8\n\n",
+          "patch_status": "applied",
+          "remediation": "### Remediation Plan: Drupal Installation Page Exposure (`/core/install.php`)\n\n**1) Configuration (Web Server Hardening)**\nThe primary mitigation for an exposed installation script in a production environment is to deny web server access at the Apache level immediately. This prevents unauthorized users from triggering new installations or accessing sensitive configuration data during setup.\n\n*   **Action:** Modify your Apache VirtualHost configuration file to explicitly block requests targeting `install.php`. Since you are running on Debian with Apache 2.4, edit `/etc/apache2/sites-available/00-default.conf` (or the specific site config) and add a `<FilesMatch>` directive within the server context or `.htaccess` if allowed by your configuration mode (`AllowOverride All`).\n*   **Implementation:** Add the following block to deny access specifically for installation paths:\n\n    ```apache\n    <FilesMatch \"^install\\.php$\">\n        Require all denied\n    </FilesMatch>\n    \n    # Optional: Block broader install directory if not needed in production\n    <Directory /var/www/html/core/install.php>\n        Deny from All\n    </Directory>\n    ```\n\n*   **Verification:** After saving the configuration, reload Apache to apply changes without downtime. Run `sudo systemctl reload apache2` or `sudo service apache2 restart`. Verify remediation by accessing `http://your-domain.com/core/install.php`; it should return a 403 Forbidden status code instead of content.\n\n**2) Package/Version (Dependency Updates)**\nThe server headers indicate PHP version **7.2.3**, which is End-of-Life and contains known vulnerabilities. This must be upgraded to ensure the underlying runtime environment cannot exploit older parsing bugs, even if access is blocked via configuration. Additionally, Drupal core versions should align with supported security releases.\n\n*   **Action:** Upgrade PHP from 7.2.x to a currently supported version (e.g., Debian Bookworm/PHP 8.1 or newer).\n*   **Implementation Steps:**\n    1.  Update package lists: `sudo apt update`\n    2.  Install the latest available PHP packages compatible with your system architecture, ensuring you have appropriate extensions for Drupal 9.x+:\n\n        ```bash\n        sudo apt install php8.1 php8.1-common php8.1-cli \\\n            php8.1-mysql php8.1-curl php8.1-gd php8.1-xml ... (all required modules)\n        ```\n    3.  Update Drupal Core and Modules: Once PHP is upgraded, ensure your `composer.json` dependencies are updated to the latest stable versions compatible with your theme/module stack. Run `sudo composer update`.\n\n*   **Note:** If you cannot upgrade immediately due to legacy module compatibility issues (common in older setups), prioritize blocking access via Configuration above until a migration path exists for PHP 8.x support. Do not leave an EOL PHP version running on production servers longer than necessary during the remediation window.\n\n**3) Code-level (File Permissions & Cleanup)**\nEnsure that sensitive core files are protected by strict file system permissions and ownership, preventing local users or compromised scripts from modifying `install.php` to bypass web server restrictions. Additionally, verify no symlinks exist elsewhere pointing to this script.\n\n*   **Action:** Restrict read/write access on the installation script so only the web server process can manage it (if needed) but cannot be modified by other system users or group members outside of `www-data`.\n*   **Implementation Steps:**\n    1.  Set ownership and permissions for the core install file:\n\n        ```bash\n        sudo chown www-data:root /var/www/html/core/install.php \n        # Note: Ensure 'install' directory is also restricted if present in public root\n        sudo chmod 640 /var/www/html/core/install.php\n        ```\n\n    2.  **Symlink Check:** Verify that no symbolic links exist within `/sites/default/files` or other subdirectories pointing to `core/install.php`. Run the following check:\n\n        ```bash\n        find /var/www -type l -name \"*install*\" | xargs ls -la\n        ```\n\n    3.  **Cleanup (If Applicable):** If this server is intended solely for production and not staging, ensure that no custom installation scripts or cron jobs reference `/core/install.php`. Remove any external references to the file in your application codebase if you are using a non-standard deployment method where `install.php` was manually copied.",
+          "resolved_after_patch": false,
+          "finding_id": "F-61695"
+        }
+      ]
+    },
+    {
+      "iteration": 3,
+      "confirmed": 2,
+      "patched": 2,
+      "resolved": 0,
+      "findings": [
+        {
+          "target": "drupal",
+          "title": "Drupal Installation Page Exposed",
+          "description": "The Drupal installation page is exposed at /core/install.php, which may indicate a misconfigured or unpatched installation.",
+          "severity": "Medium",
+          "phase": "recon",
+          "discovery_commands": [
+            {
+              "rationale": "recon step",
+              "command": "nmap -p 80,443 --script \"http-title,http-robots.txt\" drupal",
+              "phase": "recon",
+              "stdout": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-23 15:39 +0000\nNmap scan report for drupal (172.18.0.4)\nHost is up (0.00010s latency).\nrDNS record for 172.18.0.4: argus-vulhub-lab-drupal-1.argus-vulhub-lab_pentestlab\n\nPORT    STATE  SERVICE\n80/tcp  open   http\n| http-title: Choose language | Drupal\n|_Requested resource was /core/install.php\n| http-robots.txt: 22 disallowed entries (15 shown)\n| /core/ /profiles/ /README.txt /web.config /admin/ \n| /comment/reply/ /filter/tips/ /node/add/ /search/ /user/register/ \n| /user/password/ /user/login/ /user/logout/ /index.php/admin/ \n|_/index.php/comment/reply/\n443/tcp closed https\nMAC Address: 3A:68:4C:26:65:E7 (Unknown)\n\nNmap done: 1 IP address (1 host up) scanned in 0.79 seconds\n",
+              "stderr": "",
+              "exit_code": 0
+            }
+          ],
+          "verdict": "confirmed",
+          "proof": "HTTP/1.0 200 OK\nDate: Thu, 23 Jul 2026 15:39:31 GMT\nServer: Apache/2.4.25 (Debian)\nX-Powered-By: PHP/7.2.3\nCache-Control: must-revalidate, no-cache, private\nExpires: Sun, 19 Nov 1978 05:00:00 GMT\nLast-Modified: Thu, 23 Jul 2026 15:39:31 +0000\nETag: \"1784821171\"\nConnection: close\nContent-Type: text/html; charset=UTF-8\n\n",
+          "patch_status": "applied",
+          "remediation": "### Remediation Plan: Drupal Installation Page Exposure\n\n**1) Configuration**\n*   **Block Direct Access via `.htaccess`:** Edit `sites/default/.htaccess` (or your server root `.htaccess`) and add a specific deny rule for the installation script. This prevents web servers from serving content to this path regardless of PHP configuration. Add the following block:\n\n    ```apache\n    <FilesMatch \"^/core/install\\.php\">\n        Require all denied\n    </FilesMatch>\n    ```\n\n*   **Enforce Maintenance Mode:** In `sites/default/settings.php`, verify that maintenance mode is enabled for production environments to prevent unauthorized access during updates or incomplete installations. Ensure the following variable exists and is set correctly (if using a custom site):\n\n    ```php\n    $conf['maintenance_mode'] = TRUE; \n    // Or ensure development overrides are disabled:\n    if (!isset($conf['development'])) {\n        $conf['development'] =",
+          "resolved_after_patch": false,
+          "finding_id": "F-67699"
+        },
+        {
+          "target": "drupal",
+          "title": "Drupal Installation Page Exposed",
+          "description": "The Drupal installation page is exposed at /core/install.php, which may indicate a misconfigured or unpatched installation.",
+          "severity": "Medium",
+          "phase": "scan",
+          "discovery_commands": [
+            {
+              "rationale": "scan step",
+              "command": "nmap -p 80,443 --script \"http-title,http-robots.txt\" drupal",
+              "phase": "scan",
+              "stdout": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-23 15:39 +0000\nNmap scan report for drupal (172.18.0.4)\nHost is up (0.000091s latency).\nrDNS record for 172.18.0.4: argus-vulhub-lab-drupal-1.argus-vulhub-lab_pentestlab\n\nPORT    STATE  SERVICE\n80/tcp  open   http\n| http-title: Choose language | Drupal\n|_Requested resource was /core/install.php\n| http-robots.txt: 22 disallowed entries (15 shown)\n| /core/ /profiles/ /README.txt /web.config /admin/ \n| /comment/reply/ /filter/tips/ /node/add/ /search/ /user/register/ \n| /user/password/ /user/login/ /user/logout/ /index.php/admin/ \n|_/index.php/comment/reply/\n443/tcp closed https\nMAC Address: 3A:68:4C:26:65:E7 (Unknown)\n\nNmap done: 1 IP address (1 host up) scanned in 0.77 seconds\n",
+              "stderr": "",
+              "exit_code": 0
+            }
+          ],
+          "verdict": "confirmed",
+          "proof": "HTTP/1.0 200 OK\nDate: Thu, 23 Jul 2026 15:39:33 GMT\nServer: Apache/2.4.25 (Debian)\nX-Powered-By: PHP/7.2.3\nCache-Control: must-revalidate, no-cache, private\nExpires: Sun, 19 Nov 1978 05:00:00 GMT\nLast-Modified: Thu, 23 Jul 2026 15:39:33 +0000\nETag: \"1784821173\"\nConnection: close\nContent-Type: text/html; charset=UTF-8\n\n",
+          "patch_status": "applied",
+          "remediation": "1) Configuration\n*   **Web Server Access Control:** Immediately restrict access to the installation script via your web server configuration files (`.htaccess` or Nginx config). Add a specific rule to deny all HTTP requests targeting `/core/install.php`. For Apache environments using `.htaccess`, insert the following directive into `sites/default/.htaccess`:\n    ```apache\n    <FilesMatch \"^/core/install\\.php$\">\n        Require all denied\n    </FilesMatch>\n    ```\n*   **File Permissions:** Ensure that no web server user (e.g., `www-data`) has read or execute permissions on the installation script. If using a shared hosting environment where you cannot modify `.htaccess`, request your host to block this path via their control panel, but ideally, enforce strict ownership (`chown root:root` and `chmod 640 /core/install.php`).\n*   **Environment Variables:** Verify that no custom server headers or configuration variables are inadvertently exposing the installation status. Ensure environment-specific settings (e.g., in `.env`) do not toggle debug modes that might reveal this path during development-to-production transitions.\n\n2) Package/Version\n*   **PHP Upgrade:** The current PHP version is 7.2.3, which has reached End-of-Life and contains known vulnerabilities. Remediate by upgrading to a supported Long-Term Support (LTS) release of PHP (e.g., PHP 8.x). This ensures compatibility with modern security libraries that may mitigate path exposure risks automatically.\n*   **Drupal Core Update:** Upgrade Drupal core to the latest minor version within its current LTS cycle (e.g., from an older unsupported branch to Drupal 10.x or a patched 9.x release). Newer versions often include hardened defaults regarding installation paths and file permissions management",
+          "resolved_after_patch": false,
+          "finding_id": "F-70753"
+        }
+      ]
+    }
+  ]
+}

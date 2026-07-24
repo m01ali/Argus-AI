@@ -1,0 +1,59 @@
+{
+  "target": "redis",
+  "iterations": [
+    {
+      "iteration": 1,
+      "confirmed": 0,
+      "patched": 0,
+      "resolved": 0,
+      "findings": [
+        {
+          "target": "redis",
+          "title": "Redis Service Exposed with Old Version",
+          "description": "The Redis service is exposed on port 6379, and the version is 4.0.14 which is old enough to plausibly carry known vulnerabilities.",
+          "severity": "Medium",
+          "phase": "recon",
+          "discovery_commands": [
+            {
+              "rationale": "recon step",
+              "command": "nmap -sV -p 6379 redis",
+              "phase": "recon",
+              "stdout": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-23 11:47 +0000\nNmap scan report for redis (172.18.0.5)\nHost is up (0.00013s latency).\nrDNS record for 172.18.0.5: argus-vulhub-lab-redis-1.argus-vulhub-lab_pentestlab\n\nPORT     STATE SERVICE VERSION\n6379/tcp open  redis   Redis key-value store 4.0.14\nMAC Address: 96:E4:7D:5D:61:16 (Unknown)\n\nService detection performed. Please report any incorrect results at https://nmap.org/submit/ .\nNmap done: 1 IP address (1 host up) scanned in 6.81 seconds\n",
+              "stderr": "",
+              "exit_code": 0
+            }
+          ],
+          "verdict": "unconfirmed",
+          "proof": "verification failed: [Errno 2] No such file or directory: 'redis-cli'",
+          "patch_status": "n/a",
+          "remediation": "",
+          "resolved_after_patch": null,
+          "finding_id": "F-64588"
+        },
+        {
+          "target": "redis",
+          "title": "Redis Service Exposed",
+          "description": "The Redis service is exposed on port 6379 with no evidence of authentication being required or enabled.",
+          "severity": "Medium",
+          "phase": "scan",
+          "discovery_commands": [
+            {
+              "rationale": "scan step",
+              "command": "nmap -p 6379 redis",
+              "phase": "scan",
+              "stdout": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-23 11:47 +0000\nNmap scan report for redis (172.18.0.5)\nHost is up (0.000055s latency).\nrDNS record for 172.18.0.5: argus-vulhub-lab-redis-1.argus-vulhub-lab_pentestlab\n\nPORT     STATE SERVICE\n6379/tcp open  redis\nMAC Address: 96:E4:7D:5D:61:16 (Unknown)\n\nNmap done: 1 IP address (1 host up) scanned in 0.63 seconds\n",
+              "stderr": "",
+              "exit_code": 0
+            }
+          ],
+          "verdict": "unconfirmed",
+          "proof": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-23 11:47 +0000\nNmap scan report for localhost (127.0.0.1)\nHost is up (0.000057s latency).\nOther addresses for localhost (not scanned): ::1\n\nPORT     STATE  SERVICE\n6379/tcp closed redis\n\nNmap done: 1 IP address (1 host up) scanned in 0.07 seconds\n",
+          "patch_status": "n/a",
+          "remediation": "",
+          "resolved_after_patch": null,
+          "finding_id": "F-67338"
+        }
+      ]
+    }
+  ]
+}

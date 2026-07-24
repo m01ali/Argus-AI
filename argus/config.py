@@ -6,7 +6,7 @@ where the sandbox lives, scope authorisation, and report output.
 
 Argus-AI is privacy-first by construction: every model call targets a LOCAL
 Ollama endpoint. No engagement data leaves the host. This mirrors PLPF
-Outcome A (ShellGPT + LLaMA3:8B) for execution and Outcome B (Gemma3:12B
+Outcome A (ShellGPT + LLaMA3:8B) for execution and Outcome B (Qwen3.5:9B
 advisory) for remediation.
 """
 
@@ -24,14 +24,16 @@ class ModelConfig:
     # Discovery + validation: stateless shell-native execution (PLPF Outcome A).
     executor_model: str = "llama3:8b"
     # Patch proposal: conversational advisory model (PLPF Outcome B).
-    advisor_model: str = "gemma3:12b"
+    advisor_model: str = "qwen3.5:9b"
     # Local Ollama endpoint. Never a cloud URL — this is the privacy guarantee.
     ollama_host: str = "http://localhost:11434"
     # Sampling. temperature=0 for executor keeps command generation deterministic;
     # the thesis temperature-ablation work will sweep this.
     executor_temperature: float = 0.0
     advisor_temperature: float = 0.3
-    request_timeout_s: int = 120
+    # Generous enough to cover a cold model swap (VRAM-constrained hosts evict
+    # the idle model between stages) plus generation time, not just inference.
+    request_timeout_s: int = 300
 
 
 @dataclass

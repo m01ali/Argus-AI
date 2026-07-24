@@ -1,0 +1,59 @@
+{
+  "target": "target-d",
+  "iterations": [
+    {
+      "iteration": 1,
+      "confirmed": 0,
+      "patched": 0,
+      "resolved": 0,
+      "findings": [
+        {
+          "target": "target-d",
+          "title": "Jetty Server Exposed with No Authentication",
+          "description": "The Jetty server on port 8080 is exposed without any evidence of authentication being required or enabled.",
+          "severity": "Medium",
+          "phase": "recon",
+          "discovery_commands": [
+            {
+              "rationale": "recon step",
+              "command": "nmap -sV -p- target-d",
+              "phase": "recon",
+              "stdout": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-23 20:02 +0000\nNmap scan report for target-d (172.18.0.3)\nHost is up (0.0000060s latency).\nrDNS record for 172.18.0.3: argus-vulhub-lab-target-d-1.argus-vulhub-lab_pentestlab\nNot shown: 65534 closed tcp ports (reset)\nPORT     STATE SERVICE VERSION\n8080/tcp open  http    Jetty 9.2.11.v20150529\nMAC Address: 3E:EF:BB:DC:AF:34 (Unknown)\n\nService detection performed. Please report any incorrect results at https://nmap.org/submit/ .\nNmap done: 1 IP address (1 host up) scanned in 8.95 seconds\n",
+              "stderr": "",
+              "exit_code": 0
+            }
+          ],
+          "verdict": "unconfirmed",
+          "proof": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-23 20:02 +0000\n",
+          "patch_status": "n/a",
+          "remediation": "",
+          "resolved_after_patch": null,
+          "finding_id": "F-59228"
+        },
+        {
+          "target": "target-d",
+          "title": "Jetty Server Exposed with No Authentication",
+          "description": "The Jetty server on port 8080 is exposed without any evidence of authentication being required or enabled.",
+          "severity": "Medium",
+          "phase": "scan",
+          "discovery_commands": [
+            {
+              "rationale": "scan step",
+              "command": "nmap -sV -p- target-d",
+              "phase": "scan",
+              "stdout": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-23 20:02 +0000\nNmap scan report for target-d (172.18.0.3)\nHost is up (0.0000060s latency).\nrDNS record for 172.18.0.3: argus-vulhub-lab-target-d-1.argus-vulhub-lab_pentestlab\nNot shown: 65534 closed tcp ports (reset)\nPORT     STATE SERVICE VERSION\n8080/tcp open  http    Jetty 9.2.11.v20150529\nMAC Address: 3E:EF:BB:DC:AF:34 (Unknown)\n\nService detection performed. Please report any incorrect results at https://nmap.org/submit/ .\nNmap done: 1 IP address (1 host up) scanned in 7.60 seconds\n",
+              "stderr": "",
+              "exit_code": 0
+            }
+          ],
+          "verdict": "unconfirmed",
+          "proof": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-23 20:02 +0000\n",
+          "patch_status": "n/a",
+          "remediation": "",
+          "resolved_after_patch": null,
+          "finding_id": "F-69173"
+        }
+      ]
+    }
+  ]
+}

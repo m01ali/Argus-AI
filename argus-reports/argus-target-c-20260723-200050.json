@@ -1,0 +1,59 @@
+{
+  "target": "target-c",
+  "iterations": [
+    {
+      "iteration": 1,
+      "confirmed": 0,
+      "patched": 0,
+      "resolved": 0,
+      "findings": [
+        {
+          "target": "target-c",
+          "title": "Apache HTTP Server Default Version Exposed",
+          "description": "The Apache HTTP Server version 2.4.25 is exposed, which may be vulnerable to known exploits.",
+          "severity": "Medium",
+          "phase": "recon",
+          "discovery_commands": [
+            {
+              "rationale": "recon step",
+              "command": "nmap -sV -p- target-c",
+              "phase": "recon",
+              "stdout": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-23 19:59 +0000\nNmap scan report for target-c (172.18.0.2)\nHost is up (0.0000050s latency).\nrDNS record for 172.18.0.2: argus-vulhub-lab-target-c-1.argus-vulhub-lab_pentestlab\nNot shown: 65534 closed tcp ports (reset)\nPORT   STATE SERVICE VERSION\n80/tcp open  http    Apache httpd 2.4.25 ((Debian))\nMAC Address: 16:EF:5F:7B:6E:F1 (Unknown)\n\nService detection performed. Please report any incorrect results at https://nmap.org/submit/ .\nNmap done: 1 IP address (1 host up) scanned in 8.14 seconds\n",
+              "stderr": "",
+              "exit_code": 0
+            }
+          ],
+          "verdict": "unconfirmed",
+          "proof": "HTTP/1.1 302 Found\nDate: Thu, 23 Jul 2026 20:00:18 GMT\nServer: Apache/2.4.25 (Debian)\nX-Powered-By: PHP/7.2.3\nCache-Control: no-cache, private\nLocation: /core/install.php\nContent-Type: text/html; charset=UTF-8\n\n",
+          "patch_status": "n/a",
+          "remediation": "",
+          "resolved_after_patch": null,
+          "finding_id": "F-07416"
+        },
+        {
+          "target": "target-c",
+          "title": "Apache HTTP Server Default Version Exposed",
+          "description": "The Apache httpd server is running version 2.4.25, which may be vulnerable to known exploits.",
+          "severity": "Medium",
+          "phase": "scan",
+          "discovery_commands": [
+            {
+              "rationale": "scan step",
+              "command": "nmap -sV -p- target-c",
+              "phase": "scan",
+              "stdout": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-23 20:00 +0000\nNmap scan report for target-c (172.18.0.2)\nHost is up (0.0000050s latency).\nrDNS record for 172.18.0.2: argus-vulhub-lab-target-c-1.argus-vulhub-lab_pentestlab\nNot shown: 65534 closed tcp ports (reset)\nPORT   STATE SERVICE VERSION\n80/tcp open  http    Apache httpd 2.4.25 ((Debian))\nMAC Address: 16:EF:5F:7B:6E:F1 (Unknown)\n\nService detection performed. Please report any incorrect results at https://nmap.org/submit/ .\nNmap done: 1 IP address (1 host up) scanned in 7.49 seconds\n",
+              "stderr": "",
+              "exit_code": 0
+            }
+          ],
+          "verdict": "unconfirmed",
+          "proof": "HTTP/1.1 302 Found\nDate: Thu, 23 Jul 2026 20:00:34 GMT\nServer: Apache/2.4.25 (Debian)\nX-Powered-By: PHP/7.2.3\nCache-Control: no-cache, private\nLocation: /core/install.php\nContent-Type: text/html; charset=UTF-8\n\n",
+          "patch_status": "n/a",
+          "remediation": "",
+          "resolved_after_patch": null,
+          "finding_id": "F-17189"
+        }
+      ]
+    }
+  ]
+}

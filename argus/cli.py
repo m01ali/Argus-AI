@@ -58,7 +58,7 @@ def main(argv: list[str] | None = None) -> int:
         format="%(asctime)s %(name)s %(levelname)s %(message)s",
     )
 
-    cfg = ArgusConfig()
+    cfg = ArgusConfig.from_env()
     cfg.scope.authorized_targets = [args.target]
     cfg.scope.authorization_confirmed = args.authorize
     cfg.sandbox.enabled = not args.dry_run

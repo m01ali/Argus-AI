@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import logging
+import socket
 import urllib.error
 import urllib.request
 
@@ -56,6 +57,15 @@ class OllamaClient:
                 f"Cannot reach local Ollama at {self.host}: {exc}. "
                 f"Start it with `ollama serve` and pull the model with "
                 f"`ollama pull {model}`."
+            ) from exc
+        except (socket.timeout, TimeoutError) as exc:
+            raise LLMUnavailable(
+                f"Request to {model} at {self.host} exceeded the "
+                f"{self.timeout_s}s timeout. On VRAM-constrained hosts this "
+                f"usually means Ollama was still cold-loading the model after "
+                f"evicting a different one — raise "
+                f"ModelConfig.request_timeout_s, or pre-warm the model with "
+                f"`ollama run {model} \"\"` before starting the run."
             ) from exc
 
     def health(self) -> bool:

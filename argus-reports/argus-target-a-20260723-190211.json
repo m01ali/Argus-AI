@@ -1,0 +1,36 @@
+{
+  "target": "target-a",
+  "iterations": [
+    {
+      "iteration": 1,
+      "confirmed": 0,
+      "patched": 0,
+      "resolved": 0,
+      "findings": [
+        {
+          "target": "target-a",
+          "title": "Redis Service Exposed with No Authentication",
+          "description": "The Redis service is exposed on port 6379, but there is no evidence of authentication being required or enabled.",
+          "severity": "Medium",
+          "phase": "scan",
+          "discovery_commands": [
+            {
+              "rationale": "scan step",
+              "command": "nmap -sV -p- target-a",
+              "phase": "scan",
+              "stdout": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-23 19:01 +0000\nNmap scan report for target-a (172.18.0.4)\nHost is up (0.000011s latency).\nrDNS record for 172.18.0.4: argus-vulhub-lab-target-a-1.argus-vulhub-lab_pentestlab\nNot shown: 65534 closed tcp ports (reset)\nPORT     STATE SERVICE VERSION\n6379/tcp open  redis   Redis key-value store 4.0.14\nMAC Address: 0A:E1:68:9E:90:02 (Unknown)\n\nService detection performed. Please report any incorrect results at https://nmap.org/submit/ .\nNmap done: 1 IP address (1 host up) scanned in 8.33 seconds\n",
+              "stderr": "",
+              "exit_code": 0
+            }
+          ],
+          "verdict": "unconfirmed",
+          "proof": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-23 19:02 +0000\n",
+          "patch_status": "n/a",
+          "remediation": "",
+          "resolved_after_patch": null,
+          "finding_id": "F-29239"
+        }
+      ]
+    }
+  ]
+}

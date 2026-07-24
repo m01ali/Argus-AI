@@ -7,4 +7,4 @@
 #
 # Pull the models once:
 #   ollama pull llama3:8b
-#   ollama pull gemma3:12b
+#   ollama pull qwen3.5:9b
