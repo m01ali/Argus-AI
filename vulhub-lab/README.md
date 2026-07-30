@@ -235,6 +235,8 @@ curl -s http://host.docker.internal:11434/api/generate -d '{"model":"qwen3.5:9b"
 | `Run failed: timed out` during Patch Proposal | Advisor model cold-loading + generating exceeded the 120s default | Already fixed — timeout raised to 300s, clearer error message added |
 | A finding's title/description mentions the target software by name with weak/no evidence | Target hostname (or its Docker rDNS PTR record) leaked the answer | Already fixed — services renamed to opaque `target-a/b/c/d` labels; see `report/target-legend-PRIVATE.md` |
 | `docker compose ps` shows nothing after `docker compose up -d --build` | The build likely errored out silently in your terminal, or was still running | Re-run and check the exit code / tail of the output before assuming success |
+| A Validation command with `\|` (a pipe) fails oddly, or silently misfires | `subprocess.run` here has no shell, so `\|` isn't a pipe — it's passed as a literal broken argument to the first program | Already fixed — `ValidationStage._is_safe()` now rejects chained/piped commands outright with a clear reason instead of letting them run |
+| Every Discovery/Validation call returns an empty response with `qwen3.5:9b` (or any other "thinking"-capable model) as executor, discarded as `''` — reproduced both on the host and inside the `kali` container | The model burns its entire `executor_max_tokens` budget on internal reasoning before ever emitting the real answer — Ollama reports `done_reason: "length"` with the actual content sitting in an unused `"thinking"` field | Already fixed — short structured calls (command generation, JSON interpretation, verification command, YES/NO judging) now pass `think=False` to Ollama, skipping the reasoning trace entirely |
 
 ---
 
