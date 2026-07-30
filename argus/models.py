@@ -60,6 +60,10 @@ class Finding:
     # Filled by Validation
     verdict: ValidationVerdict = ValidationVerdict.UNCONFIRMED
     proof: str = ""                 # the evidence string from the sandbox
+    verification_command: str = ""  # the exact command Validation ran to attempt proof
+    analysis: str = ""              # model-written technical narrative — every finding,
+                                     # confirmed or not, explaining what was found, what was
+                                     # attempted, and why it was (not) confirmed
 
     # Filled by Patch Proposal
     patch_status: PatchStatus = PatchStatus.NOT_APPLICABLE

@@ -86,7 +86,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Run failed: {exc}", file=sys.stderr)
         return 1
 
-    md, js = write_reports(results, args.target, cfg.report.output_dir)
+    md, js = write_reports(results, args.target, cfg.report.output_dir,
+                           cfg.models.executor_model, cfg.models.advisor_model)
     print(f"\nReports written:\n  {md}\n  {js}")
     return 0
 

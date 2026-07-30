@@ -3,65 +3,57 @@ ARGUS-AI / VULHUB LAB — HOW TO RE-RUN AFTER A DEVICE RESTART
 Run these in order. Verify each step before moving to the next.
 
 
-STEP 1 — Confirm Docker Desktop engine is running
---------------------------------------------------
+1. Docker Desktop running?
+
+
 docker ps
+If it errors, start Docker Desktop and wait ~30-60s.
 
-If this errors, start Docker Desktop (Start Menu, or):
-& "C:\Program Files\Docker\Docker\Docker Desktop.exe"
-Wait 30-60 seconds, then re-run "docker ps" until it returns cleanly.
+2. Ollama bound correctly?
 
 
-STEP 2 — Start Ollama bound to 0.0.0.0 (required so Docker can reach it)
---------------------------------------------------------------------------
-Check first:
 netstat -an | findstr 11434
+Want 0.0.0.0:11434 LISTENING. If not:
 
-If you see "0.0.0.0:11434  LISTENING" -> already good, skip to Step 3.
 
-If you see nothing, or only "127.0.0.1:11434":
 $env:OLLAMA_HOST = "0.0.0.0"
 ollama serve
+(leave that terminal open, use a new one for everything below)
 
-Leave that terminal window open (this IS the Ollama server now).
-Open a NEW terminal window for every step below.
-
-Verify again:
-netstat -an | findstr 11434
--> must show 0.0.0.0:11434 LISTENING
+3. Bring up the lab:
 
 
-STEP 3 — Bring up the lab containers
---------------------------------------
-cd d:/Argus-AI/vulhub-lab
+cd D:\Argus-AI\vulhub-lab
 docker compose up -d
 docker compose ps
+Confirm all 5 services (target-a, target-b, target-c, target-d, kali) show Up.
 
-Confirm all 5 services show "Up": target-a, target-b, target-c, target-d, kali
-(No --build needed unless a Dockerfile changed.)
+4. Verify connectivity:
 
 
-STEP 4 — Verify the container can reach Ollama
--------------------------------------------------
 docker compose exec kali curl -s http://host.docker.internal:11434/api/tags
+Should list llama3:8b, qwen3.5:9b, redsage-8b-dpo.
 
-Should print JSON listing llama3:8b and qwen3.5:9b.
-If empty or an error -> go back to Step 2. Do not continue until this works.
+5. Shell in:
 
 
-STEP 5 — Shell into the scanner container
---------------------------------------------
 docker compose exec kali bash
+6. Run — pick your model set:
+
+Default (llama3:8b + qwen3.5:9b):
 
 
-STEP 6 — Run Argus against each target (inside the container shell)
------------------------------------------------------------------------
 python -m argus.cli --target target-a --authorize -v
 python -m argus.cli --target target-b --authorize -v
 python -m argus.cli --target target-c --authorize -v
 python -m argus.cli --target target-d --authorize -v
 
-Reports are written to: d:/Argus-AI/argus-reports/
+Or RedSage:
+
+python -m argus.cli --target target-a --authorize -v --executor-model redsage-8b-dpo --advisor-model redsage-8b-dpo
+python -m argus.cli --target target-b --authorize -v --executor-model redsage-8b-dpo --advisor-model redsage-8b-dpo
+python -m argus.cli --target target-c --authorize -v --executor-model redsage-8b-dpo --advisor-model redsage-8b-dpo
+python -m argus.cli --target target-d --authorize -v --executor-model redsage-8b-dpo --advisor-model redsage-8b-dpo
 
 
 ==============================================================
@@ -80,6 +72,77 @@ docker compose up -d --build
 
 
 ==============================================================
+OPTIONAL — SETTING UP AND USING REDSAGE (VIA OLLAMA)
+==============================================================
+RedSage (RISys-Lab, ICLR 2026) is a cybersecurity-specialist model built on
+Qwen3-8B, trained specifically on tool-use for nmap/sqlmap/metasploit-style
+commands plus cybersecurity Q&A. The DPO variant
+(RISys-Lab/RedSage-Qwen3-8B-DPO) is the authors' own recommended, most-
+aligned release.
+
+It's not in Ollama's pull registry, so it's registered manually from a GGUF
+file — after that, it's just another Ollama tag, using the exact same
+Discovery/Validation/Patch Proposal path as llama3:8b/qwen3.5:9b. No custom
+server, no --llm-host override, no extra Python dependencies.
+
+Chosen quantization: Q5_K_M (5.85GB) — good quality/size balance for 8GB VRAM.
+
+STEP R1 — Download the GGUF file (on the HOST)
+---------------------------------------------------
+mkdir D:\models\redsage
+cd D:\models\redsage
+curl.exe -L -C - --retry 20 --retry-delay 5 --retry-all-errors -o RedSage-Qwen3-8B-DPO.i1-Q5_K_M.gguf "https://huggingface.co/mradermacher/RedSage-Qwen3-8B-DPO-i1-GGUF/resolve/main/RedSage-Qwen3-8B-DPO.i1-Q5_K_M.gguf"
+
+(~5.85GB. Use "curl.exe" explicitly in PowerShell — plain "curl" is aliased
+to Invoke-WebRequest there and does not understand these flags. -C - resumes
+if the download drops partway and you re-run the same command; --retry and
+--retry-all-errors make it recover from connection resets automatically
+instead of you having to notice and re-run it.)
+
+
+STEP R2 — Create an Ollama Modelfile (in the same folder)
+-------------------------------------------------------------
+Create D:\models\redsage\Modelfile with exactly this content:
+
+FROM ./RedSage-Qwen3-8B-DPO.i1-Q5_K_M.gguf
+TEMPLATE """{{ if .System }}<|im_start|>system
+{{ .System }}<|im_end|>
+{{ end }}{{ if .Prompt }}<|im_start|>user
+{{ .Prompt }}<|im_end|>
+{{ end }}<|im_start|>assistant
+{{ .Response }}<|im_end|>
+"""
+PARAMETER stop "<|im_start|>"
+PARAMETER stop "<|im_end|>"
+PARAMETER num_ctx 4096
+
+(This is the standard ChatML template Qwen-family models expect.)
+
+
+STEP R3 — Register the model with Ollama
+---------------------------------------------
+cd D:\models\redsage
+ollama create redsage-8b-dpo -f Modelfile
+
+Verify:
+ollama list
+-> should show "redsage-8b-dpo" in the list
+
+
+STEP R4 — Run Argus using RedSage instead of llama3:8b/qwen3.5:9b
+----------------------------------------------------------------------
+Inside the kali container shell (same as Step 6 above) — no --llm-host
+needed, Ollama is already the default backend:
+
+python -m argus.cli --target target-a --authorize -v --executor-model redsage-8b-dpo --advisor-model redsage-8b-dpo
+python -m argus.cli --target target-b --authorize -v --executor-model redsage-8b-dpo --advisor-model redsage-8b-dpo
+python -m argus.cli --target target-c --authorize -v --executor-model redsage-8b-dpo --advisor-model redsage-8b-dpo
+python -m argus.cli --target target-d --authorize -v --executor-model redsage-8b-dpo --advisor-model redsage-8b-dpo
+
+To switch back to the original models, just drop the two --...-model flags.
+
+
+==============================================================
 NOTES
 ==============================================================
 - target-a = Redis (unauthenticated access)
@@ -90,9 +153,14 @@ NOTES
    — do not reference that file's contents from inside the kali
    container or from anything Argus-AI runs.)
 
-- Models used: llama3:8b (Discovery/Validation), qwen3.5:9b (Patch Proposal)
+- Models: llama3:8b + qwen3.5:9b (default), or redsage-8b-dpo (see the
+  REDSAGE section above) — all served by Ollama at
+  http://host.docker.internal:11434. Select per-run with --executor-model /
+  --advisor-model.
+
 - If a run times out during Patch Proposal, pre-warm the advisor model first:
   curl -s http://host.docker.internal:11434/api/generate -d "{\"model\":\"qwen3.5:9b\",\"prompt\":\"hi\",\"stream\":false}" > $null
+  (swap the model name if pre-warming redsage-8b-dpo instead)
 
 - Full troubleshooting table and setup-from-scratch instructions:
   vulhub-lab/README.md

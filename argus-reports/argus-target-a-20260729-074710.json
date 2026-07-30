@@ -1,0 +1,59 @@
+{
+  "target": "target-a",
+  "iterations": [
+    {
+      "iteration": 1,
+      "confirmed": 0,
+      "patched": 0,
+      "resolved": 0,
+      "findings": [
+        {
+          "target": "target-a",
+          "title": "Redis Service with Known Vulnerabilities",
+          "description": "The Redis service version 4.0.14 is running on port 6379, which may plausibly carry known vulnerabilities.",
+          "severity": "High",
+          "phase": "recon",
+          "discovery_commands": [
+            {
+              "rationale": "recon step",
+              "command": "nmap -sV -p- --min-rate 10000 target-a",
+              "phase": "recon",
+              "stdout": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-29 07:46 +0000\nNmap scan report for target-a (172.18.0.2)\nHost is up (0.0000050s latency).\nrDNS record for 172.18.0.2: argus-vulhub-lab-target-a-1.argus-vulhub-lab_pentestlab\nNot shown: 65534 closed tcp ports (reset)\nPORT     STATE SERVICE VERSION\n6379/tcp open  redis   Redis key-value store 4.0.14\nMAC Address: 4A:20:69:7D:43:6D (Unknown)\n\nService detection performed. Please report any incorrect results at https://nmap.org/submit/ .\nNmap done: 1 IP address (1 host up) scanned in 7.12 seconds\n",
+              "stderr": "",
+              "exit_code": 0
+            }
+          ],
+          "verdict": "unconfirmed",
+          "proof": "verification failed: [Errno 2] No such file or directory: 'nc'",
+          "patch_status": "n/a",
+          "remediation": "",
+          "resolved_after_patch": null,
+          "finding_id": "F-15866"
+        },
+        {
+          "target": "target-a",
+          "title": "Redis Service with Known Vulnerabilities",
+          "description": "The Redis service version 4.0.14 is running on port 6379, which may plausibly carry known vulnerabilities.",
+          "severity": "High",
+          "phase": "scan",
+          "discovery_commands": [
+            {
+              "rationale": "scan step",
+              "command": "nmap -sV -p- --min-rate 10000 target-a",
+              "phase": "scan",
+              "stdout": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-29 07:46 +0000\nNmap scan report for target-a (172.18.0.2)\nHost is up (0.0000050s latency).\nrDNS record for 172.18.0.2: argus-vulhub-lab-target-a-1.argus-vulhub-lab_pentestlab\nNot shown: 65534 closed tcp ports (reset)\nPORT     STATE SERVICE VERSION\n6379/tcp open  redis   Redis key-value store 4.0.14\nMAC Address: 4A:20:69:7D:43:6D (Unknown)\n\nService detection performed. Please report any incorrect results at https://nmap.org/submit/ .\nNmap done: 1 IP address (1 host up) scanned in 7.58 seconds\n",
+              "stderr": "",
+              "exit_code": 0
+            }
+          ],
+          "verdict": "unconfirmed",
+          "proof": "verification failed: [Errno 2] No such file or directory: 'nc'",
+          "patch_status": "n/a",
+          "remediation": "",
+          "resolved_after_patch": null,
+          "finding_id": "F-26286"
+        }
+      ]
+    }
+  ]
+}

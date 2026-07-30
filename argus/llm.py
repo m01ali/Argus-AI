@@ -29,17 +29,25 @@ class OllamaClient:
         self.timeout_s = timeout_s
 
     def generate(self, model: str, prompt: str, *, temperature: float = 0.0,
-                 system: str | None = None) -> str:
+                 system: str | None = None, max_tokens: int | None = None) -> str:
         """
         Single-shot, stateless generation. Stateless is deliberate: it mirrors
         ShellGPT's --shell prompt isolation, the mechanism the thesis identifies
         as enabling reliable security-sensitive command generation.
+
+        max_tokens (Ollama's "num_predict" option) bounds worst-case
+        generation length — short structured outputs (a command, a JSON
+        verdict) don't need a 1000+ token runway, and capping it bounds
+        worst-case latency.
         """
+        options: dict = {"temperature": temperature}
+        if max_tokens is not None:
+            options["num_predict"] = max_tokens
         payload: dict = {
             "model": model,
             "prompt": prompt,
             "stream": False,
-            "options": {"temperature": temperature},
+            "options": options,
         }
         if system:
             payload["system"] = system

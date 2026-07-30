@@ -1,0 +1,36 @@
+{
+  "target": "target-b",
+  "iterations": [
+    {
+      "iteration": 1,
+      "confirmed": 0,
+      "patched": 0,
+      "resolved": 0,
+      "findings": [
+        {
+          "target": "target-b",
+          "title": "Apache Solr with Verbose Banner",
+          "description": "The Apache Solr service is exposed on port 8983 and discloses an exact product/version, which could be exploited for information gathering.",
+          "severity": "High",
+          "phase": "scan",
+          "discovery_commands": [
+            {
+              "rationale": "scan step",
+              "command": "nmap -sV -p- --min-rate 10000 target-b",
+              "phase": "scan",
+              "stdout": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-29 07:47 +0000\nNmap scan report for target-b (172.18.0.4)\nHost is up (0.0000050s latency).\nrDNS record for 172.18.0.4: argus-vulhub-lab-target-b-1.argus-vulhub-lab_pentestlab\nNot shown: 65533 closed tcp ports (reset)\nPORT     STATE SERVICE VERSION\n5005/tcp open  jdwp    Java Debug Wire Protocol (Reference Implementation) version 1.8 1.8.0_102\n8983/tcp open  http    Apache Solr\nMAC Address: 56:98:6A:35:1F:A6 (Unknown)\n\nService detection performed. Please report any incorrect results at https://nmap.org/submit/ .\nNmap done: 1 IP address (1 host up) scanned in 12.47 seconds\n",
+              "stderr": "",
+              "exit_code": 0
+            }
+          ],
+          "verdict": "unconfirmed",
+          "proof": "{\n  \"responseHeader\":{\n    \"status\":0,\n    \"QTime\":11},\n  \"mode\":\"std\",\n  \"solr_home\":\"/opt/solr/server/solr\",\n  \"lucene\":{\n    \"solr-spec-version\":\"8.11.0\",\n    \"solr-impl-version\":\"8.11.0 e912fdd5b632267a9088507a2a6bcbc75108f381 - jpountz - 2021-11-09 14:08:51\",\n    \"lucene-spec-version\":\"8.11.0\",\n    \"lucene-impl-version\":\"8.11.0 e912fdd5b632267a9088507a2a6bcbc75108f381 - jpountz - 2021-11-09 14:03:35\"},\n  \"jvm\":{\n    \"version\":\"1.8.0_102 25.102-b14\",\n    \"name\":\"Oracle Corporation OpenJDK 64-Bit Server VM\",\n    \"spec\":{\n      \"vendor\":\"Oracle Corporation\",\n      \"name\":\"Java Platform API Specification\",\n      \"version\":\"1.8\"},\n    \"jre\":{\n      \"vendor\":\"Oracle Corporation\",\n      \"version\":\"1.8.0_102\"},\n    \"vm\":{\n      \"vendor\":\"Oracle Corporation\",\n      \"name\":\"OpenJDK 64-Bit Server VM\",\n      \"version\":\"25.102-b14\"},\n    \"processors\":32,\n    \"memory\":{\n      \"free\":\"443.4 MB\",\n      \"total\":\"512 MB\",\n      \"max\":\"512 MB\",\n      \"used\":\"68.6 MB (%13.4)\",\n      \"raw\":{\n        \"free\":464978176,\n        \"total\":536870912,\n        \"max\":536870912,\n        \"used\":71892736,\n        \"used%\":13.39106559753418}},\n    \"jmx\":{\n      \"bootclasspath\":\"/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/resources.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/rt.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/sunrsasign.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jsse.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jce.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/charsets.jar:/usr/lib/jvm/jav",
+          "patch_status": "n/a",
+          "remediation": "",
+          "resolved_after_patch": null,
+          "finding_id": "F-67005"
+        }
+      ]
+    }
+  ]
+}

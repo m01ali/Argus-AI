@@ -34,6 +34,13 @@ class ModelConfig:
     # Generous enough to cover a cold model swap (VRAM-constrained hosts evict
     # the idle model between stages) plus generation time, not just inference.
     request_timeout_s: int = 300
+    # Executor calls (command generation, JSON interpretation, YES/NO judging)
+    # are all short, structured outputs — capping them bounds worst-case
+    # latency and avoids paying for a large context window nothing needs.
+    executor_max_tokens: int = 200
+    # Patch Proposal remediation is genuinely long-form (three labelled
+    # sections), so it keeps a much larger budget.
+    advisor_max_tokens: int = 1024
 
 
 @dataclass

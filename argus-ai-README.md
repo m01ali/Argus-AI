@@ -47,11 +47,12 @@ The architecture diagram is in [`docs/argus-flow-diagram.html`](docs/argus-flow-
 ## Requirements
 
 - **Python 3.10+** (no third-party packages required — uses only the standard library)
-- **[Ollama](https://ollama.com)** running locally with the two models pulled:
+- **[Ollama](https://ollama.com)** running locally with the models pulled:
   ```bash
   ollama pull llama3:8b
   ollama pull qwen3.5:9b
   ```
+  RedSage-Qwen3-8B-DPO is also supported as an alternative Ollama tag — see `how to run.txt` for pulling/registering it via a GGUF + Modelfile.
 - **Kali Linux** (or any host with the security tooling on `PATH`): `nmap`, `nikto`, `sqlmap`, `searchsploit`, etc.
 - An **isolated lab network** and target(s). The current lab is a dockerized [Vulhub](https://github.com/vulhub/vulhub) stack — see [`vulhub-lab/`](vulhub-lab/) — covering Redis unauthenticated access, Log4Shell (CVE-2021-44228), Drupalgeddon2 (CVE-2018-7600), and Struts2 S2-045 (CVE-2017-5638). Metasploitable2/DVWA/HackTheBox remain supported targets too.
 
@@ -97,7 +98,8 @@ argus = Argus(cfg, authorizer=authorize_patch)
 results = argus.run("192.168.56.101")
 
 from argus import write_reports
-write_reports(results, "192.168.56.101", cfg.report.output_dir)
+write_reports(results, "192.168.56.101", cfg.report.output_dir,
+              cfg.models.executor_model, cfg.models.advisor_model)
 ```
 
 ### Environment-variable config (for scripted runs)

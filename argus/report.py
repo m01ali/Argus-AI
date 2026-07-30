@@ -15,17 +15,28 @@ from pathlib import Path
 from .models import LoopResult, ValidationVerdict, PatchStatus
 
 
-def write_reports(results: list[LoopResult], target: str, out_dir: Path) -> tuple[Path, Path]:
+def _safe_slug(value: str) -> str:
+    """Filesystem-safe slug for a target name or model tag."""
+    return value.replace(":", "_").replace("/", "_").replace(".", "-")
+
+
+def write_reports(results: list[LoopResult], target: str, out_dir: Path,
+                   executor_model: str, advisor_model: str) -> tuple[Path, Path]:
     out_dir.mkdir(parents=True, exist_ok=True)
     stamp = time.strftime("%Y%m%d-%H%M%S")
-    safe_target = target.replace(":", "_").replace("/", "_").replace(".", "-")
-    base = str(out_dir / f"argus-{safe_target}-{stamp}")
+    safe_target = _safe_slug(target)
+    safe_exec = _safe_slug(executor_model)
+    safe_adv = _safe_slug(advisor_model)
+    model_tag = safe_exec if safe_exec == safe_adv else f"{safe_exec}_{safe_adv}"
+    base = str(out_dir / f"argus-{safe_target}-{model_tag}-{stamp}")
 
     json_path = Path(base + ".json")
     md_path = Path(base + ".md")
 
     json_path.write_text(json.dumps(
         {"target": target,
+         "executor_model": executor_model,
+         "advisor_model": advisor_model,
          "iterations": [
              {"iteration": r.iteration,
               "confirmed": r.confirmed_count,
@@ -36,15 +47,21 @@ def write_reports(results: list[LoopResult], target: str, out_dir: Path) -> tupl
         indent=2,
     ))
 
-    md_path.write_text(_render_markdown(results, target))
+    md_path.write_text(_render_markdown(results, target, executor_model, advisor_model))
     return md_path, json_path
 
 
-def _render_markdown(results: list[LoopResult], target: str) -> str:
+def _render_markdown(results: list[LoopResult], target: str,
+                      executor_model: str, advisor_model: str) -> str:
     lines: list[str] = []
     lines.append(f"# Argus-AI Remediation-Verified Report")
     lines.append("")
     lines.append(f"**Target:** `{target}`  ")
+    if executor_model == advisor_model:
+        lines.append(f"**Model:** `{executor_model}` (executor + advisor)  ")
+    else:
+        lines.append(f"**Executor model:** `{executor_model}` | "
+                     f"**Advisor model:** `{advisor_model}`  ")
     lines.append(f"**Generated:** {time.strftime('%Y-%m-%d %H:%M:%S')}  ")
     lines.append(f"**Iterations:** {len(results)}")
     lines.append("")
@@ -83,11 +100,30 @@ def _render_markdown(results: list[LoopResult], target: str) -> str:
             if f.description:
                 lines.append(f.description)
                 lines.append("")
-            if f.verdict == ValidationVerdict.CONFIRMED and f.proof:
-                lines.append("**Proof of exploit (sandbox):**")
-                lines.append("```")
-                lines.append(f.proof[:1200])
-                lines.append("```")
+            if f.discovery_commands:
+                lines.append("**Discovery:**")
+                for cmd in f.discovery_commands:
+                    lines.append(f"- Command (`{cmd.phase}` phase): `{cmd.command}`")
+                    if cmd.stdout.strip():
+                        lines.append("  ```")
+                        for ln in cmd.stdout[:2000].splitlines():
+                            lines.append(f"  {ln}")
+                        lines.append("  ```")
+                lines.append("")
+            if f.verdict != ValidationVerdict.SKIPPED:
+                lines.append("**Verification:**")
+                lines.append(f"- Command: `{f.verification_command or '(none)'}`")
+                if f.proof.strip():
+                    lines.append("  ```")
+                    for ln in f.proof[:1500].splitlines():
+                        lines.append(f"  {ln}")
+                    lines.append("  ```")
+                lines.append("")
+            if f.analysis:
+                lines.append("**Detailed analysis:**")
+                lines.append("")
+                lines.append(f.analysis)
+                lines.append("")
             if f.patch_status == PatchStatus.APPLIED:
                 lines.append(f"**Patch:** applied (authorised). "
                              f"**Resolved on re-scan:** "

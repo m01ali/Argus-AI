@@ -1,0 +1,36 @@
+{
+  "target": "target-b",
+  "iterations": [
+    {
+      "iteration": 1,
+      "confirmed": 0,
+      "patched": 0,
+      "resolved": 0,
+      "findings": [
+        {
+          "target": "target-b",
+          "title": "Apache Solr on Port 8983",
+          "description": "Apache Solr is running on port 8983, which may be vulnerable to information disclosure and other attacks if not properly secured.",
+          "severity": "High",
+          "phase": "scan",
+          "discovery_commands": [
+            {
+              "rationale": "scan step",
+              "command": "nmap -sV -p- target-b",
+              "phase": "scan",
+              "stdout": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-26 21:57 +0000\nNmap scan report for target-b (172.18.0.4)\nHost is up (0.0000060s latency).\nrDNS record for 172.18.0.4: argus-vulhub-lab-target-b-1.argus-vulhub-lab_pentestlab\nNot shown: 65533 closed tcp ports (reset)\nPORT     STATE SERVICE VERSION\n5005/tcp open  jdwp    Java Debug Wire Protocol (Reference Implementation) version 1.8 1.8.0_102\n8983/tcp open  http    Apache Solr\nMAC Address: 0E:1F:C6:5F:F2:E6 (Unknown)\n\nService detection performed. Please report any incorrect results at https://nmap.org/submit/ .\nNmap done: 1 IP address (1 host up) scanned in 12.03 seconds\n",
+              "stderr": "",
+              "exit_code": 0
+            }
+          ],
+          "verdict": "unconfirmed",
+          "proof": "Starting Nmap 7.99 ( https://nmap.org ) at 2026-07-26 22:02 +0000\n",
+          "patch_status": "n/a",
+          "remediation": "",
+          "resolved_after_patch": null,
+          "finding_id": "F-44902"
+        }
+      ]
+    }
+  ]
+}

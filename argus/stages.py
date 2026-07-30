@@ -55,7 +55,11 @@ class DiscoveryStage:
         "explanation, no markdown fences. Prefer: nmap, nikto, sqlmap, searchsploit, "
         "whatweb, gobuster, enum4linux. Never use destructive flags. Only use flags "
         "and options you are certain exist for that exact tool; if you are not "
-        "certain, invoke the tool with no extra flags rather than guessing one."
+        "certain, invoke the tool with no extra flags rather than guessing one. "
+        "Never use flags that write output to a file on disk (e.g. nmap's -oA/"
+        "-oN/-oX/-oG, or a generic -o/--output) — this harness captures standard "
+        "output directly, so file output is unnecessary and will fail if the "
+        "target directory does not exist."
     )
 
     def __init__(self, cfg: ArgusConfig, llm: OllamaClient) -> None:
@@ -70,7 +74,7 @@ class DiscoveryStage:
         raw = self.llm.generate(
             self.cfg.models.executor_model, prompt,
             temperature=self.cfg.models.executor_temperature,
-            system=self.SYSTEM,
+            system=self.SYSTEM, max_tokens=self.cfg.models.executor_max_tokens,
         )
         return self._sanitise(raw)
 
@@ -148,6 +152,7 @@ class DiscoveryStage:
         raw = self.llm.generate(
             self.cfg.models.executor_model, prompt,
             temperature=self.cfg.models.executor_temperature,
+            max_tokens=self.cfg.models.executor_max_tokens,
         )
         data = _extract_json(raw)
         if not data or "title" not in data:
@@ -173,7 +178,15 @@ class ValidationStage:
 
     SYSTEM = (
         "You generate a SINGLE non-destructive verification command that would "
-        "prove or disprove a specific finding. Output only the command."
+        "prove or disprove a specific finding. Output only the command. Never "
+        "use flags that write output to a file on disk (e.g. nmap's -oA/-oN/"
+        "-oX/-oG, or a generic -o/--output) — this harness captures standard "
+        "output directly, so file output is unnecessary and will fail if the "
+        "target directory does not exist. Never chain multiple commands "
+        "together (no |, ;, &&, ||, backticks, or $()) — this harness runs "
+        "your command directly, not through a shell, so a pipe will not "
+        "filter anything; it will just be passed as a broken extra argument "
+        "to the first program and cause it to fail."
     )
 
     def __init__(self, cfg: ArgusConfig, llm: OllamaClient) -> None:
@@ -187,6 +200,7 @@ class ValidationStage:
                 f.verdict = ValidationVerdict.SKIPPED
                 continue
             f.verdict, f.proof = self._verify(f)
+            f.analysis = self._elaborate(f)
         return findings
 
     def _verify(self, f: Finding) -> tuple[ValidationVerdict, str]:
@@ -199,10 +213,16 @@ class ValidationStage:
         raw = self.llm.generate(
             self.cfg.models.executor_model, prompt,
             temperature=self.cfg.models.executor_temperature, system=self.SYSTEM,
+            max_tokens=self.cfg.models.executor_max_tokens,
         )
         command = DiscoveryStage._sanitise(raw)
+        f.verification_command = command or "(no command produced)"
         if not command:
             return (ValidationVerdict.UNCONFIRMED, "no verification command produced")
+        if not self._is_safe(command):
+            return (ValidationVerdict.UNCONFIRMED,
+                    f"rejected chained/piped command (no shell here, so it "
+                    f"would not work as intended): {command}")
         try:
             proc = subprocess.run(
                 shlex.split(command), capture_output=True, text=True,
@@ -221,6 +241,60 @@ class ValidationStage:
                 return (ValidationVerdict.CONFIRMED, evidence[:1500])
         return (ValidationVerdict.UNCONFIRMED, evidence[:1500])
 
+    @staticmethod
+    def _is_safe(command: str) -> bool:
+        """
+        Reject shell chaining/piping. Unlike Discovery, Validation isn't
+        restricted to ALLOWED_TOOLS (it may reasonably reach for something
+        like redis-cli), but it must still reject multi-command pipelines:
+        subprocess.run here has no shell, so a "|" isn't a pipe — it's passed
+        as a literal extra argument to the first program, which then either
+        errors outright (e.g. redis-cli) or silently ignores it (e.g. curl
+        treating it as an extra, invalid URL) — neither is what the model
+        intended, so don't run it at all.
+        """
+        return not any(c in command for c in [";", "&&", "||", "|", "`", "$("])
+
+    ELABORATE_SYSTEM = (
+        "You are a penetration-testing analyst writing the technical narrative "
+        "section of an assessment report. Be specific and technical, and ground "
+        "every claim only in the command output actually provided to you — "
+        "never invent evidence, output, or details that were not shown to you."
+    )
+
+    def _elaborate(self, f: Finding) -> str:
+        """
+        Ask the advisor model to write a detailed technical write-up for this
+        finding, whether it was confirmed or not. This is the "why unconfirmed"
+        detail Patch Proposal never produces, since Patch Proposal only runs
+        for CONFIRMED findings.
+        """
+        disco = f.discovery_commands[0] if f.discovery_commands else None
+        disco_cmd = disco.command if disco else "(none recorded)"
+        disco_out = disco.stdout[:2000] if disco else ""
+        prompt = (
+            f"Finding: {f.title}\nSeverity: {f.severity.value}\nTarget: {f.target}\n"
+            f"Description: {f.description}\n\n"
+            f"Discovery command: {disco_cmd}\n"
+            f"Discovery output:\n{disco_out}\n\n"
+            f"Verification command: {f.verification_command}\n"
+            f"Verification verdict: {f.verdict.value}\n"
+            f"Verification evidence:\n{f.proof[:2000]}\n\n"
+            "Write a detailed technical analysis covering: (1) exactly what was "
+            "detected and how, citing the actual discovery output above; (2) what "
+            "verification was attempted and what evidence it produced, citing the "
+            "actual verification output above; and (3) a clear, specific "
+            "justification for why this was or was not confirmed as exploitable. "
+            "Do not restate generic security advice — stay grounded in the "
+            "evidence shown above."
+        )
+        return self.llm.generate(
+            self.cfg.models.advisor_model, prompt,
+            temperature=self.cfg.models.advisor_temperature,
+            system=self.ELABORATE_SYSTEM,
+            max_tokens=self.cfg.models.advisor_max_tokens,
+        )
+
     def _judge(self, f: Finding, command: str, evidence: str) -> bool:
         prompt = (
             "Does this command output CONFIRM the finding is real and exploitable? "
@@ -230,6 +304,7 @@ class ValidationStage:
         raw = self.llm.generate(
             self.cfg.models.executor_model, prompt,
             temperature=self.cfg.models.executor_temperature,
+            max_tokens=self.cfg.models.executor_max_tokens,
         )
         return raw.strip().upper().startswith("YES")
 
@@ -276,6 +351,7 @@ class PatchProposalStage:
         return self.llm.generate(
             self.cfg.models.advisor_model, prompt,
             temperature=self.cfg.models.advisor_temperature, system=self.SYSTEM,
+            max_tokens=self.cfg.models.advisor_max_tokens,
         )
 
 
