@@ -55,6 +55,8 @@ services:
       - ../:/opt/argus-ai
     working_dir: /opt/argus-ai
     environment:
+      # Override per-run with --executor-model/--advisor-model to use a
+      # different Ollama tag (e.g. redsage-8b-dpo) — see how to run.txt.
       ARGUS_OLLAMA_HOST: "http://host.docker.internal:11434"
       ARGUS_EXECUTOR_MODEL: "llama3:8b"
       ARGUS_ADVISOR_MODEL: "qwen3.5:9b"

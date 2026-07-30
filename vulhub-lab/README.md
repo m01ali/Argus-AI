@@ -16,7 +16,10 @@ Four real Vulhub containers + one Kali-based scanner container, all on one
 isolated Docker network. Argus-AI runs *inside* the scanner container and
 attacks the other four over that network. Ollama (the LLM backend) runs on
 your host machine, not in Docker — the scanner container reaches it via
-`http://host.docker.internal:11434`.
+`http://host.docker.internal:11434`. Both the default models (llama3:8b,
+qwen3.5:9b) and RedSage-Qwen3-8B-DPO are just different Ollama tags served
+from the same endpoint — select one per-run with `--executor-model`/
+`--advisor-model` (see `../how to run.txt`).
 
 ```
                     ┌─────────────────────────────────────┐
