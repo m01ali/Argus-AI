@@ -1,0 +1,77 @@
+name: argus-metasploitable-lab
+
+# Isolated bridge network — the Metasploitable target and the Kali scanner
+# container talk to each other by service name; nothing here is reachable from
+# the LAN except the host-loopback port mappings below (only there so you can
+# eyeball a service from the host while authorising a patch).
+#
+# IMPORTANT — the target service name is deliberately opaque (target-m), NOT
+# "metasploitable". Docker's embedded DNS gives every container both a forward
+# DNS name AND a reverse-DNS (PTR) record built from the compose service name,
+# and nmap prints that rDNS unprompted — a service literally named
+# "metasploitable" would hand the answer to the model the instant it runs a
+# plain scan. See report/metasploitable-legend-PRIVATE.md for what target-m is
+# — that file must never be read by, or referenced in, anything Argus-AI (or
+# any other model-driven scanner) runs.
+#
+# Unlike the Vulhub lab (four containers, one CVE each), Metasploitable2 is a
+# SINGLE host running dozens of intentionally-vulnerable services (vsftpd 2.3.4
+# backdoor, UnrealIRCd backdoor, distcc, Samba, Tomcat, MySQL, PostgreSQL,
+# NFS, RPC, Telnet, and more). So there is one target service here, not four.
+networks:
+  pentestlab:
+    driver: bridge
+
+services:
+  # --- The intentionally-vulnerable target ---------------------------------
+  # tleemcjr/metasploitable2 is the canonical dockerised Metasploitable2. Its
+  # image does NOT auto-start the vulnerable services on boot — you have to run
+  # /bin/services.sh — so we do that here and then hold the container open.
+  target-m:
+    image: tleemcjr/metasploitable2
+    command: /bin/sh -c "/bin/services.sh ; tail -f /dev/null"
+    networks: [pentestlab]
+    # These host mappings are OPTIONAL — the scanner reaches the target by
+    # service name (target-m) over the internal net, not via these ports.
+    # SMB/NetBIOS are remapped off 139/445 because Windows holds those on the
+    # host; everything else is shifted to 127.0.0.1-only high ports so nothing
+    # clashes with the vulhub-lab stack (6379/8081/8082/8983/5005).
+    ports:
+      - "127.0.0.1:2221:21"     # FTP        (vsftpd 2.3.4 backdoor)
+      - "127.0.0.1:2222:22"     # SSH
+      - "127.0.0.1:2223:23"     # Telnet
+      - "127.0.0.1:2225:25"     # SMTP       (Postfix)
+      - "127.0.0.1:8083:80"     # HTTP       (Apache / DVWA / Mutillidae)
+      - "127.0.0.1:1139:139"    # NetBIOS    (Samba)
+      - "127.0.0.1:1445:445"    # SMB        (Samba usermap_script)
+      - "127.0.0.1:13306:3306"  # MySQL
+      - "127.0.0.1:15432:5432"  # PostgreSQL
+      - "127.0.0.1:6667:6667"   # IRC        (UnrealIRCd backdoor)
+      - "127.0.0.1:8180:8180"   # Tomcat
+
+  # --- Attacker/scanner container ------------------------------------------
+  # Same Kali toolbox as the vulhub lab, plus the extra service clients you
+  # need to actually talk to Metasploitable's many protocols (ftp, telnet,
+  # rpcinfo, showmount, mysql, psql, snmpwalk, nc, finger, hydra). Runs
+  # Argus-AI itself (Python 3, stdlib only). Joined to the same network as the
+  # target so it can reach it by the opaque name (target-m). You can also drop
+  # into a shell here and drive gemini-cli / sgpt / msfconsole against target-m
+  # by hand — this is your single attacker box for the lab.
+  kali:
+    build: ./kali
+    networks: [pentestlab]
+    volumes:
+      - ../:/opt/argus-ai
+    working_dir: /opt/argus-ai
+    environment:
+      # Override per-run with --executor-model/--advisor-model to use a
+      # different Ollama tag (e.g. redsage-8b-dpo) — see how to run.txt.
+      ARGUS_OLLAMA_HOST: "http://host.docker.internal:11434"
+      ARGUS_EXECUTOR_MODEL: "llama3:8b"
+      ARGUS_ADVISOR_MODEL: "qwen3.5:9b"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - target-m
+    tty: true
+    stdin_open: true

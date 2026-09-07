@@ -48,12 +48,26 @@ python -m argus.cli --target target-b --authorize -v
 python -m argus.cli --target target-c --authorize -v
 python -m argus.cli --target target-d --authorize -v
 
+Or Qwen3.5:9B on BOTH roles (NOT the same as the default above — the default
+uses llama3:8b as executor and qwen3.5:9b only as advisor; this runs Qwen
+end to end instead):
+
+python -m argus.cli --target target-a --authorize -v --executor-model qwen3.5:9b --advisor-model qwen3.5:9b
+python -m argus.cli --target target-b --authorize -v --executor-model qwen3.5:9b --advisor-model qwen3.5:9b
+python -m argus.cli --target target-c --authorize -v --executor-model qwen3.5:9b --advisor-model qwen3.5:9b
+python -m argus.cli --target target-d --authorize -v --executor-model qwen3.5:9b --advisor-model qwen3.5:9b
+
 Or RedSage:
 
 python -m argus.cli --target target-a --authorize -v --executor-model redsage-8b-dpo --advisor-model redsage-8b-dpo
 python -m argus.cli --target target-b --authorize -v --executor-model redsage-8b-dpo --advisor-model redsage-8b-dpo
 python -m argus.cli --target target-c --authorize -v --executor-model redsage-8b-dpo --advisor-model redsage-8b-dpo
 python -m argus.cli --target target-d --authorize -v --executor-model redsage-8b-dpo --advisor-model redsage-8b-dpo
+
+IMPORTANT: --executor-model defaults to llama3:8b if you don't pass it
+explicitly. Setting only --advisor-model (e.g. "--advisor-model qwen3.5:9b"
+alone) still runs Discovery/Validation on llama3:8b — check the report's
+"Executor model:" / "Advisor model:" header line to see what actually ran.
 
 
 ==============================================================
@@ -153,10 +167,12 @@ NOTES
    — do not reference that file's contents from inside the kali
    container or from anything Argus-AI runs.)
 
-- Models: llama3:8b + qwen3.5:9b (default), or redsage-8b-dpo (see the
-  REDSAGE section above) — all served by Ollama at
-  http://host.docker.internal:11434. Select per-run with --executor-model /
-  --advisor-model.
+- Models: llama3:8b + qwen3.5:9b (default, split roles), qwen3.5:9b on both
+  roles, or redsage-8b-dpo on both roles (see the REDSAGE section above) —
+  all served by Ollama at http://host.docker.internal:11434. Select per-run
+  with --executor-model / --advisor-model — both flags must be set explicitly
+  to run one model end to end; setting only one still leaves the other on
+  its default (llama3:8b executor / qwen3.5:9b advisor).
 
 - If a run times out during Patch Proposal, pre-warm the advisor model first:
   curl -s http://host.docker.internal:11434/api/generate -d "{\"model\":\"qwen3.5:9b\",\"prompt\":\"hi\",\"stream\":false}" > $null

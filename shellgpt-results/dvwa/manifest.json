@@ -1,0 +1,27 @@
+{
+  "lab": "dvwa",
+  "target": "target-w",
+  "generated": "2026-09-07T14:52:31",
+  "scans": [
+    {
+      "tag": "01-nmap",
+      "name": "nmap",
+      "title": "Nmap service/version scan"
+    },
+    {
+      "tag": "02-web",
+      "name": "web",
+      "title": "Web fingerprint (whatweb + nikto + headers)"
+    },
+    {
+      "tag": "03-sqlmap",
+      "name": "sqlmap",
+      "title": "Authenticated SQL injection (sqlmap)"
+    },
+    {
+      "tag": "04-cmdi",
+      "name": "cmdi",
+      "title": "Command injection (/vulnerabilities/exec/)"
+    }
+  ]
+}

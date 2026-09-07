@@ -1,0 +1,54 @@
+Compose can now delegate builds to bake for better performance.
+ To do so, set COMPOSE_BAKE=true.
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [kali internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.35kB 0.0s done
+#1 DONE 0.0s
+
+#2 [kali internal] load metadata for docker.io/kalilinux/kali-rolling:latest
+#2 DONE 2.7s
+
+#3 [kali internal] load .dockerignore
+#3 transferring context: 2B 0.0s done
+#3 DONE 0.0s
+
+#4 [kali 1/4] FROM docker.io/kalilinux/kali-rolling:latest@sha256:ed99295a386abde2fb31e01a441b7c2800d9bcf19a20028b77d642c3ef068363
+#4 resolve docker.io/kalilinux/kali-rolling:latest@sha256:ed99295a386abde2fb31e01a441b7c2800d9bcf19a20028b77d642c3ef068363 0.0s done
+#4 DONE 0.0s
+
+#5 [kali 2/4] RUN apt-get update && apt-get install -y --no-install-recommends         nmap         nikto         sqlmap         whatweb         gobuster         enum4linux         smbclient         dnsutils         whois         curl         nbtscan         redis-tools         exploitdb         ftp         telnet         rpcbind         nfs-common         default-mysql-client         postgresql-client         snmp         netcat-traditional         finger         hydra         python3         python-is-python3         ca-certificates     && rm -rf /var/lib/apt/lists/*
+#5 CACHED
+
+#6 [kali 3/4] RUN searchsploit -u || true
+#6 CACHED
+
+#7 [kali 4/4] WORKDIR /opt/argus-ai
+#7 CACHED
+
+#8 [kali] exporting to image
+#8 exporting layers done
+#8 exporting manifest sha256:ac3a6bbf016dbf146cea2a65e561efcd4ab88bce688b0fc2db54520fec118729 done
+#8 exporting config sha256:1d35466e90ea28ccbaf0949a0db96860618a45f67a151dbeaf02e17c20d1ac56 done
+#8 exporting attestation manifest sha256:2ccf3ce0ef5fb0c5040fc1c84961bf9e2359af84eb01897cd870e77c50e8e72e 0.0s done
+#8 exporting manifest list sha256:3da4c981e74b1e228f1ce5779c24b4b7b98d67e2b9a438d08c73034e902bb7a8 done
+#8 naming to docker.io/library/argus-dvwa-lab-kali:latest done
+#8 unpacking to docker.io/library/argus-dvwa-lab-kali:latest done
+#8 DONE 0.1s
+
+#9 [kali] resolving provenance for metadata file
+#9 DONE 0.0s
+ kali  Built
+ Network argus-dvwa-lab_pentestlab  Creating
+ Network argus-dvwa-lab_pentestlab  Created
+ Volume "argus-dvwa-lab_dvwa-db"  Creating
+ Volume "argus-dvwa-lab_dvwa-db"  Created
+ Container argus-dvwa-lab-target-w-1  Creating
+ Container argus-dvwa-lab-target-w-1  Created
+ Container argus-dvwa-lab-kali-1  Creating
+ Container argus-dvwa-lab-kali-1  Created
+ Container argus-dvwa-lab-target-w-1  Starting
+ Container argus-dvwa-lab-target-w-1  Started
+ Container argus-dvwa-lab-kali-1  Starting
+ Container argus-dvwa-lab-kali-1  Started
+EXIT=0

@@ -75,6 +75,7 @@ class DiscoveryStage:
             self.cfg.models.executor_model, prompt,
             temperature=self.cfg.models.executor_temperature,
             system=self.SYSTEM, max_tokens=self.cfg.models.executor_max_tokens,
+            think=False,
         )
         return self._sanitise(raw)
 
@@ -153,6 +154,7 @@ class DiscoveryStage:
             self.cfg.models.executor_model, prompt,
             temperature=self.cfg.models.executor_temperature,
             max_tokens=self.cfg.models.executor_max_tokens,
+            think=False,
         )
         data = _extract_json(raw)
         if not data or "title" not in data:
@@ -213,7 +215,7 @@ class ValidationStage:
         raw = self.llm.generate(
             self.cfg.models.executor_model, prompt,
             temperature=self.cfg.models.executor_temperature, system=self.SYSTEM,
-            max_tokens=self.cfg.models.executor_max_tokens,
+            max_tokens=self.cfg.models.executor_max_tokens, think=False,
         )
         command = DiscoveryStage._sanitise(raw)
         f.verification_command = command or "(no command produced)"
@@ -304,7 +306,7 @@ class ValidationStage:
         raw = self.llm.generate(
             self.cfg.models.executor_model, prompt,
             temperature=self.cfg.models.executor_temperature,
-            max_tokens=self.cfg.models.executor_max_tokens,
+            max_tokens=self.cfg.models.executor_max_tokens, think=False,
         )
         return raw.strip().upper().startswith("YES")
 

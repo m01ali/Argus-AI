@@ -1,0 +1,12 @@
+{
+  "lab": "htb",
+  "target": "10.10.15.25",
+  "generated": "2026-09-07T20:18:39",
+  "scans": [
+    {
+      "tag": "01-nmap",
+      "name": "nmap",
+      "title": "Nmap service/version scan"
+    }
+  ]
+}

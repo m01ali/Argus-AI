@@ -1,0 +1,210 @@
+Starting Nmap 7.99 ( https://nmap.org ) at 2026-09-07 14:22 +0000
+Nmap scan report for target-m (172.19.0.2)
+Host is up (0.00011s latency).
+rDNS record for 172.19.0.2: argus-metasploitable-lab-target-m-1.argus-metasploitable-lab_pentestlab
+Not shown: 983 closed tcp ports (conn-refused)
+PORT     STATE SERVICE     VERSION
+21/tcp   open  ftp         vsftpd 2.3.4
+|_ftp-anon: Anonymous FTP login allowed (FTP code 230)
+| ftp-syst: 
+|   STAT: 
+| FTP server status:
+|      Connected to 172.19.0.3
+|      Logged in as ftp
+|      TYPE: ASCII
+|      No session bandwidth limit
+|      Session timeout in seconds is 300
+|      Control connection is plain text
+|      Data connections will be plain text
+|      vsFTPd 2.3.4 - secure, fast, stable
+|_End of status
+22/tcp   open  ssh         OpenSSH 4.7p1 Debian 8ubuntu1 (protocol 2.0)
+| ssh-hostkey: 
+|   1024 60:0f:cf:e1:c0:5f:6a:74:d6:90:24:fa:c4:d5:6c:cd (DSA)
+|_  2048 56:56:24:0f:21:1d:de:a7:2b:ae:61:b1:24:3d:e8:f3 (RSA)
+23/tcp   open  telnet      Linux telnetd
+25/tcp   open  smtp        Postfix smtpd
+| sslv2: 
+|   SSLv2 supported
+|   ciphers: 
+|     SSL2_RC4_128_EXPORT40_WITH_MD5
+|     SSL2_RC2_128_CBC_WITH_MD5
+|     SSL2_RC4_128_WITH_MD5
+|     SSL2_DES_64_CBC_WITH_MD5
+|     SSL2_DES_192_EDE3_CBC_WITH_MD5
+|_    SSL2_RC2_128_CBC_EXPORT40_WITH_MD5
+|_ssl-date: 2026-09-07T14:24:56+00:00; 0s from scanner time.
+|_smtp-commands: metasploitable.localdomain, PIPELINING, SIZE 10240000, VRFY, ETRN, STARTTLS, ENHANCEDSTATUSCODES, 8BITMIME, DSN
+| ssl-cert: Subject: commonName=ubuntu804-base.localdomain/organizationName=OCOSA/stateOrProvinceName=There is no such thing outside US/countryName=XX
+| Not valid before: 2010-03-17T14:07:45
+|_Not valid after:  2010-04-16T14:07:45
+80/tcp   open  http        Apache httpd 2.2.8 ((Ubuntu) DAV/2)
+|_http-server-header: Apache/2.2.8 (Ubuntu) DAV/2
+|_http-title: Metasploitable2 - Linux
+111/tcp  open  rpcbind     2 (RPC #100000)
+| rpcinfo: 
+|   program version    port/proto  service
+|   100000  2            111/tcp   rpcbind
+|   100003  2,3,4       2049/tcp   nfs
+|   100003  2,3,4       2049/udp   nfs
+|   100005  1,2,3      50419/tcp   mountd
+|   100005  1,2,3      58275/udp   mountd
+|   100021  1,3,4      33414/tcp   nlockmgr
+|   100021  1,3,4      58022/udp   nlockmgr
+|   100024  1          42939/tcp   status
+|_  100024  1          49024/udp   status
+139/tcp  open  netbios-ssn Samba smbd 3.X - 4.X (workgroup: WORKGROUP)
+445/tcp  open  netbios-ssn Samba smbd 3.0.20-Debian (workgroup: WORKGROUP)
+512/tcp  open  exec?
+513/tcp  open  login
+514/tcp  open  tcpwrapped
+1099/tcp open  java-rmi    GNU Classpath grmiregistry
+1524/tcp open  ingreslock?
+| fingerprint-strings: 
+|   DNSStatusRequestTCP: 
+|     root@214dcb0131f9:/# 
+|     root@214dcb0131f9:/#
+|   DNSVersionBindReqTCP: 
+|     root@214dcb0131f9:/# 
+|     version
+|     bind
+|   GenericLines: 
+|     root@214dcb0131f9:/# 
+|     root@214dcb0131f9:/# 
+|     root@214dcb0131f9:/# 
+|     root@214dcb0131f9:/# 
+|     root@214dcb0131f9:/#
+|   GetRequest: 
+|     root@214dcb0131f9:/# GET / HTTP/1.0
+|     <HTML>
+|     <HEAD>
+|     <TITLE>Directory /</TITLE>
+|     <BASE HREF="file:/">
+|     </HEAD>
+|     <BODY>
+|     <H1>Directory listing of /</H1>
+|     <UL>
+|     <LI><A HREF="./">./</A>
+|     <LI><A HREF="../">../</A>
+|     <LI><A HREF=".dockerenv">.dockerenv</A>
+|     <LI><A HREF="bin/">bin/</A>
+|     <LI><A HREF="boot/">boot/</A>
+|     <LI><A HREF="cdrom/">cdrom/</A>
+|     <LI><A HREF="core">core</A>
+|     <LI><A HREF="dev/">dev/</A>
+|     <LI><A HREF="etc/">etc/</A>
+|     <LI><A HREF="home/">home/</A>
+|     <LI><A HREF="initrd/">initrd/</A>
+|     <LI><A HREF="initrd.img">initrd.img</A>
+|     <LI><A HREF="lib/">lib/</A>
+|     <LI><A HREF="lost%2Bfound/">lost+found/</A>
+|     <LI><A HREF="media/">media/</A>
+|     <LI><A HREF="mnt/">mnt/</A>
+|     <LI><A HREF="nohup.out">nohup.out</A>
+|     <LI><A HREF="opt/">opt/</A>
+|     <LI><A HREF="proc/">proc/</A>
+|     <LI><A HREF="root/">root/</A>
+|     <LI><A HREF="sbin/">sbin/</A>
+|     <LI><A HREF="srv/">srv/</A>
+|     <LI><A HREF="sys/">sys/</A>
+|     <LI><A HREF="tmp/">tmp/</A>
+|     <LI><A HRE
+|   HTTPOptions: 
+|     root@214dcb0131f9:/# OPTIONS / HTTP/1.0
+|     bash: OPTIONS: command not found
+|     root@214dcb0131f9:/# 
+|     root@214dcb0131f9:/# 
+|     root@214dcb0131f9:/# 
+|     root@214dcb0131f9:/#
+|   NULL: 
+|     root@214dcb0131f9:/#
+|   RPCCheck: 
+|     root@214dcb0131f9:/# 
+|     (root 
+|     |(root
+|   RTSPRequest: 
+|     root@214dcb0131f9:/# OPTIONS / RTSP/1.0
+|     bash: OPTIONS: command not found
+|     root@214dcb0131f9:/# 
+|     root@214dcb0131f9:/# 
+|     root@214dcb0131f9:/# 
+|_    root@214dcb0131f9:/#
+2121/tcp open  ftp         ProFTPD 1.3.1
+3306/tcp open  mysql       MySQL 5.0.51a-3ubuntu5
+| mysql-info: 
+|   Protocol: 10
+|   Version: 5.0.51a-3ubuntu5
+|   Thread ID: 48
+|   Capabilities flags: 43564
+|   Some Capabilities: Support41Auth, SupportsTransactions, SwitchToSSLAfterHandshake, ConnectWithDatabase, LongColumnFlag, SupportsCompression, Speaks41ProtocolNew
+|   Status: Autocommit
+|_  Salt: Of5sg)3cz[;SnR05\NR2
+5432/tcp open  postgresql  PostgreSQL DB 8.3.0 - 8.3.7
+| ssl-cert: Subject: commonName=ubuntu804-base.localdomain/organizationName=OCOSA/stateOrProvinceName=There is no such thing outside US/countryName=XX
+| Not valid before: 2010-03-17T14:07:45
+|_Not valid after:  2010-04-16T14:07:45
+|_ssl-date: 2026-09-07T14:24:55+00:00; 0s from scanner time.
+6667/tcp open  irc         UnrealIRCd
+| irc-info: 
+|   users: 1
+|   servers: 1
+|   lusers: 1
+|   lservers: 0
+|   server: irc.Metasploitable.LAN
+|   version: Unreal3.2.8.1. irc.Metasploitable.LAN 
+|   uptime: 0 days, 1:30:00
+|   source ident: nmap
+|   source host: 53ED0863.EC62612F.58478418.IP
+|_  error: Closing Link: kglqdpxrf[172.19.0.3] (Quit: kglqdpxrf)
+1 service unrecognized despite returning data. If you know the service/version, please submit the following fingerprint at https://nmap.org/cgi-bin/submit.cgi?new-service :
+SF-Port1524-TCP:V=7.99%I=7%D=9/7%Time=6A9EC89D%P=x86_64-pc-linux-gnu%r(NUL
+SF:L,15,"root@214dcb0131f9:/#\x20")%r(GenericLines,6D,"root@214dcb0131f9:/
+SF:#\x20\nroot@214dcb0131f9:/#\x20\nroot@214dcb0131f9:/#\x20\nroot@214dcb0
+SF:131f9:/#\x20\nroot@214dcb0131f9:/#\x20")%r(GetRequest,49E,"root@214dcb0
+SF:131f9:/#\x20GET\x20/\x20HTTP/1\.0\n<HTML>\n<HEAD>\n<TITLE>Directory\x20
+SF:/</TITLE>\n<BASE\x20HREF=\"file:/\">\n</HEAD>\n<BODY>\n<H1>Directory\x2
+SF:0listing\x20of\x20/</H1>\n<UL>\n<LI><A\x20HREF=\"\./\">\./</A>\n<LI><A\
+SF:x20HREF=\"\.\./\">\.\./</A>\n<LI><A\x20HREF=\"\.dockerenv\">\.dockerenv
+SF:</A>\n<LI><A\x20HREF=\"bin/\">bin/</A>\n<LI><A\x20HREF=\"boot/\">boot/<
+SF:/A>\n<LI><A\x20HREF=\"cdrom/\">cdrom/</A>\n<LI><A\x20HREF=\"core\">core
+SF:</A>\n<LI><A\x20HREF=\"dev/\">dev/</A>\n<LI><A\x20HREF=\"etc/\">etc/</A
+SF:>\n<LI><A\x20HREF=\"home/\">home/</A>\n<LI><A\x20HREF=\"initrd/\">initr
+SF:d/</A>\n<LI><A\x20HREF=\"initrd\.img\">initrd\.img</A>\n<LI><A\x20HREF=
+SF:\"lib/\">lib/</A>\n<LI><A\x20HREF=\"lost%2Bfound/\">lost\+found/</A>\n<
+SF:LI><A\x20HREF=\"media/\">media/</A>\n<LI><A\x20HREF=\"mnt/\">mnt/</A>\n
+SF:<LI><A\x20HREF=\"nohup\.out\">nohup\.out</A>\n<LI><A\x20HREF=\"opt/\">o
+SF:pt/</A>\n<LI><A\x20HREF=\"proc/\">proc/</A>\n<LI><A\x20HREF=\"root/\">r
+SF:oot/</A>\n<LI><A\x20HREF=\"sbin/\">sbin/</A>\n<LI><A\x20HREF=\"srv/\">s
+SF:rv/</A>\n<LI><A\x20HREF=\"sys/\">sys/</A>\n<LI><A\x20HREF=\"tmp/\">tmp/
+SF:</A>\n<LI><A\x20HRE")%r(HTTPOptions,A0,"root@214dcb0131f9:/#\x20OPTIONS
+SF:\x20/\x20HTTP/1\.0\nbash:\x20OPTIONS:\x20command\x20not\x20found\nroot@
+SF:214dcb0131f9:/#\x20\nroot@214dcb0131f9:/#\x20\nroot@214dcb0131f9:/#\x20
+SF:\nroot@214dcb0131f9:/#\x20")%r(RTSPRequest,A0,"root@214dcb0131f9:/#\x20
+SF:OPTIONS\x20/\x20RTSP/1\.0\nbash:\x20OPTIONS:\x20command\x20not\x20found
+SF:\nroot@214dcb0131f9:/#\x20\nroot@214dcb0131f9:/#\x20\nroot@214dcb0131f9
+SF::/#\x20\nroot@214dcb0131f9:/#\x20")%r(RPCCheck,32,"root@214dcb0131f9:/#
+SF:\x20\x07\(root\x20\x07\x08\x08\x08\x08\x08\x08\x07\x07\|\(root\x20\x08\
+SF:x08\x08\x08\x08\x08")%r(DNSVersionBindReqTCP,26,"root@214dcb0131f9:/#\x
+SF:20\x07\x07\x07version\x07bind\x07\x07")%r(DNSStatusRequestTCP,2C,"root@
+SF:214dcb0131f9:/#\x20\nroot@214dcb0131f9:/#\x20\x07");
+Service Info: Hosts:  metasploitable.localdomain, irc.Metasploitable.LAN; OSs: Unix, Linux; CPE: cpe:/o:linux:linux_kernel
+
+Host script results:
+|_smb2-time: Protocol negotiation failed (SMB2)
+| smb-security-mode: 
+|   account_used: <blank>
+|   authentication_level: user
+|   challenge_response: supported
+|_  message_signing: disabled (dangerous, but default)
+| smb-os-discovery: 
+|   OS: Unix (Samba 3.0.20-Debian)
+|   Computer name: 214dcb0131f9
+|   NetBIOS computer name: 
+|   Domain name: 
+|   FQDN: 214dcb0131f9
+|_  System time: 2026-09-07T10:24:48-04:00
+|_clock-skew: mean: 1h00m00s, deviation: 2h00m00s, median: 0s
+|_nbstat: NetBIOS name: 214DCB0131F9, NetBIOS user: <unknown>, NetBIOS MAC: <unknown> (unknown)
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 161.67 seconds

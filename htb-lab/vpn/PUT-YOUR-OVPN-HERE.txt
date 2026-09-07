@@ -1,0 +1,10 @@
+Put your HackTheBox .ovpn file in this folder.
+
+1. Log in to https://www.hackthebox.com  (MonitorsFour is a RETIRED machine, so
+   you need a VIP / VIP+ subscription to spawn it).
+2. Top-right "Connect to HTB" -> choose the Machines/Labs VPN region -> download
+   the .ovpn (e.g. lab_<username>.ovpn).
+3. Drop it in this folder, then import it into OpenVPN Connect (see ../README.md
+   section 3).
+
+This folder is gitignored for *.ovpn — your VPN key never gets committed.

@@ -29,7 +29,8 @@ class OllamaClient:
         self.timeout_s = timeout_s
 
     def generate(self, model: str, prompt: str, *, temperature: float = 0.0,
-                 system: str | None = None, max_tokens: int | None = None) -> str:
+                 system: str | None = None, max_tokens: int | None = None,
+                 think: bool | None = None) -> str:
         """
         Single-shot, stateless generation. Stateless is deliberate: it mirrors
         ShellGPT's --shell prompt isolation, the mechanism the thesis identifies
@@ -39,6 +40,16 @@ class OllamaClient:
         generation length — short structured outputs (a command, a JSON
         verdict) don't need a 1000+ token runway, and capping it bounds
         worst-case latency.
+
+        think=False disables the reasoning trace on models that support one
+        (e.g. Qwen3-family "thinking" models). Without this, a low max_tokens
+        can be entirely consumed by internal reasoning before the model ever
+        emits its actual answer, silently producing an empty response
+        (Ollama reports this as done_reason="length" with the real content
+        sitting in a separate, unused "thinking" field). Ollama ignores this
+        flag harmlessly for models that don't support it. Verified directly
+        against the Ollama API and reproduced inside the kali container with
+        qwen3.5:9b as executor — not an artifact of the test environment.
         """
         options: dict = {"temperature": temperature}
         if max_tokens is not None:
@@ -51,6 +62,8 @@ class OllamaClient:
         }
         if system:
             payload["system"] = system
+        if think is not None:
+            payload["think"] = think
 
         data = json.dumps(payload).encode("utf-8")
         url = f"{self.host}/api/generate"

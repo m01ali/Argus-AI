@@ -1,0 +1,22 @@
+{
+  "lab": "metasploitable",
+  "target": "target-m",
+  "generated": "2026-09-07T15:06:19",
+  "scans": [
+    {
+      "tag": "01-nmap",
+      "name": "nmap",
+      "title": "Nmap service/version scan"
+    },
+    {
+      "tag": "02-ingreslock",
+      "name": "ingreslock",
+      "title": "TCP 1524 ingreslock \u2014 unauthenticated root shell"
+    },
+    {
+      "tag": "03-samba",
+      "name": "samba",
+      "title": "Samba usermap_script RCE (CVE-2007-2447)"
+    }
+  ]
+}

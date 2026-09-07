@@ -1,0 +1,23 @@
+### target-m Samba config check (via 1524 root shell) ###
+root@214dcb0131f9:/# echo ===SMBCONF===
+===SMBCONF===
+root@214dcb0131f9:/# grep -niE "username map|map script|add machine|guest ok|<niE "username map|map script|add machine|guest ok|m                         ap to guest" /etc/samba/s<pt|add machine|guest ok|map to guest" /etc/samba/sm                         b.conf
+107:username map script = /etc/samba/scripts/mapusers.sh
+191:;   guest ok = yes
+211:   guest ok = no
+244:   guest ok = yes
+root@214dcb0131f9:/# echo ===TESTPARM===
+===TESTPARM===
+root@214dcb0131f9:/# testparm -s 2>/dev/null | grep -iE "username map|map to <rm -s 2>/dev/null | grep -iE "username map|map to g                         uest|guest ok"
+	username map script = /etc/samba/scripts/mapusers.sh
+	guest ok = Yes
+root@214dcb0131f9:/# echo ===PROOFFILE===
+===PROOFFILE===
+root@214dcb0131f9:/# ls -la /tmp/argus_smb_rce 2>/dev/null || echo NO_PROOF_F< /tmp/argus_smb_rce 2>/dev/null || echo NO_PROOF_FI                         LE_WRITTEN
+NO_PROOF_FILE_WRITTEN
+root@214dcb0131f9:/# echo ===SMBVER===
+===SMBVER===
+root@214dcb0131f9:/# smbd -V 2>/dev/null
+Version 3.0.20-Debian
+root@214dcb0131f9:/# exit
+exit

@@ -1,0 +1,13 @@
+### smb.conf directive check (via 1524 root shell) ###
+root@214dcb0131f9:/# grep -niE "username map|map script" /etc/samba/smb.conf;
+<niE "username map|map script" /etc/samba/smb.conf;                          smbd -V; exit
+107:username map script = /etc/samba/scripts/mapusers.sh
+Version 3.0.20-Debian
+exit
+
+### attempting RCE via smbclient username injection ###
+### proof (read back via 1524 root shell) ###
+root@214dcb0131f9:/# cat /tmp/llama_smb_rce 2>/dev/null || echo INJECTION_DID
+<mp/llama_smb_rce 2>/dev/null || echo INJECTION_DID_                         NOT_RUN; exit
+INJECTION_DID_NOT_RUN
+exit

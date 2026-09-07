@@ -1,0 +1,41 @@
+### Samba usermap_script RCE (CVE-2007-2447) on target-m — CONFIRMED PRESENT ###
+
+Evidence gathered:
+
+1. Service/version (from nmap -sV and smbd -V on the host):
+   - 139/tcp, 445/tcp open: Samba smbd 3.0.20-Debian
+   - smbd -V  ->  Version 3.0.20-Debian
+   - Samba 3.0.0 through 3.0.25rc3 are vulnerable to CVE-2007-2447.
+
+2. Vulnerable configuration (from /etc/samba/smb.conf on target-m):
+   - line 107:  username map script = /etc/samba/scripts/mapusers.sh
+   - This is the exact precondition for CVE-2007-2447: when "username map
+     script" is set, Samba builds the command  /bin/sh -c "<script> <username>"
+     and runs it WITHOUT sanitising <username>. Shell metacharacters (e.g.
+     backticks) in the SMB username are therefore evaluated by /bin/sh and
+     execute as root — remote, unauthenticated code execution.
+
+3. Additional SMB weaknesses (from nmap host scripts):
+   - smb-security-mode: message_signing = disabled (dangerous, but default)
+   - smb-security-mode: account_used = guest  (anonymous/guest access allowed)
+   - Shares reachable anonymously over SMB1: print$, tmp ("oh noes!"), opt,
+     IPC$, ADMIN$.
+
+Exploitation attempt (tooling limitation, NOT a target fix):
+   - The modern Kali smbclient (Samba 4.x client) sanitises/validates the
+     username and refuses to transmit backticks in the SMB session setup, so it
+     cannot deliver the CVE-2007-2447 payload. Eight payload variants
+     (shares tmp/IPC$ x prefixes ./= and /= x with/without nohup) all failed to
+     execute — verified via an independent root shell that no injected command
+     ran.
+   - The canonical working trigger is Metasploit's
+     exploit/multi/samba/usermap_script module, which crafts the raw SMB1
+     session-setup packet (not installed in this lab image).
+   - Independent confirmation of full host compromise already exists: the
+     ingreslock backdoor on TCP 1524 gives an unauthenticated root shell
+     (see 02-root1524.txt).
+
+Conclusion: target-m is definitively vulnerable to CVE-2007-2447 (correct
+version + vulnerable directive enabled). Live exploitation in this lab simply
+requires the raw-packet exploit (Metasploit) rather than the sanitising modern
+smbclient.

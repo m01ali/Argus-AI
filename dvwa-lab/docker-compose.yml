@@ -1,0 +1,64 @@
+name: argus-dvwa-lab
+
+# Isolated bridge network — the DVWA target and the Kali scanner container talk
+# to each other by service name; nothing is reachable from the LAN except the
+# host-loopback port mapping below (there only so you can browse the app while
+# working). Same pattern as ../vulhub-lab and ../metasploitable-lab.
+#
+# IMPORTANT — the target service name is deliberately opaque (target-w), NOT
+# "dvwa". Docker's embedded DNS gives every container a reverse-DNS (PTR) record
+# built from the compose service name, and nmap/whatweb surface it — a service
+# literally named "dvwa" would hand the answer to the model on the first scan.
+# See report/dvwa-legend-PRIVATE.md for what target-w is — that file must never
+# be read by, or referenced in, anything Argus-AI (or any model-driven scanner)
+# runs.
+#
+# DVWA (Damn Vulnerable Web Application) is a single PHP/MySQL web app whose
+# vulnerabilities (SQLi, XSS, CSRF, command injection, file upload/inclusion,
+# brute force) live BEHIND a login and a per-session "security level" cookie —
+# unlike Metasploitable's network services, most of DVWA's surface only opens up
+# after you authenticate (default creds admin/password) and set the level.
+networks:
+  pentestlab:
+    driver: bridge
+
+services:
+  # --- The intentionally-vulnerable target ---------------------------------
+  # vulnerables/web-dvwa is the canonical single-container DVWA: Apache + PHP +
+  # MySQL all baked in, started by the image's own entrypoint. The database
+  # still needs a one-time "Create / Reset Database" (setup.php) — the README
+  # shows the one-liner that does it from the kali container after `up`.
+  target-w:
+    image: vulnerables/web-dvwa
+    networks: [pentestlab]
+    ports:
+      - "127.0.0.1:8084:80"   # http — 8081/8082 (vulhub) and 8083 (metasploitable) are taken
+    # DVWA writes MySQL state to /var/lib/mysql; a named volume keeps a
+    # configured DB across restarts. `docker compose down -v` wipes it for a
+    # clean re-setup.
+    volumes:
+      - dvwa-db:/var/lib/mysql
+
+  # --- Attacker/scanner container ------------------------------------------
+  # Same Kali toolbox as the other labs (cache-shared build). Joined to the same
+  # network so it reaches the app by the opaque name (target-w). Shell in here to
+  # drive argus, gemini-cli, sgpt, sqlmap, nikto, hydra, etc. by hand.
+  kali:
+    build: ./kali
+    networks: [pentestlab]
+    volumes:
+      - ../:/opt/argus-ai
+    working_dir: /opt/argus-ai
+    environment:
+      ARGUS_OLLAMA_HOST: "http://host.docker.internal:11434"
+      ARGUS_EXECUTOR_MODEL: "llama3:8b"
+      ARGUS_ADVISOR_MODEL: "qwen3.5:9b"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - target-w
+    tty: true
+    stdin_open: true
+
+volumes:
+  dvwa-db:
