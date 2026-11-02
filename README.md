@@ -21,8 +21,8 @@ Argus-AI implements a four-stage closed loop modelled on the Aardvark and Codex 
 ```
 
 1. **Discovery:** ShellGPT in `--shell` mode performs structured reconnaissance, scanning, and vulnerability identification using the PTES phase sequence. Outputs are direct, executable terminal results from local tooling (Nmap, Nikto, sqlmap, searchsploit) rather than cloud-mediated summaries.
-2. **Validation:** Each candidate finding is exploit-verified inside an isolated VMware/sandbox boundary using the same Kali toolchain. **Only findings with confirmed proof-of-exploit progress** — this is the structural answer to LLM hallucination: a fabricated finding never reaches the patch stage.
-3. **Patch Proposal:** Gemma3:12B, in advisory mode (PLPF Outcome B), generates structured remediation (configuration changes, package upgrades, code-level fixes) for verified findings only — leveraging its analytical depth while side-stepping its self-execution failure mode.
+2. **Validation:** Each candidate finding is exploit-verified inside an isolated VMware/sandbox boundary using the same Kali toolchain. Only findings with confirmed proof-of-exploit progress advance. This is the structural answer to LLM hallucination, ensuring a fabricated finding never reaches the patch stage.
+3. **Patch Proposal:** Gemma3:12B, in advisory mode (PLPF Outcome B), generates structured remediation (configuration changes, package upgrades, code-level fixes) for verified findings only. This leverages its analytical depth while side-stepping its self-execution failure mode.
 4. **Re-scan:** After an authorised patch is applied, Argus-AI re-executes discovery against the changed surface, closing the loop and producing a remediation-verified report.
 
 _The architecture diagram is in [`docs/argus-flow-diagram.html`](docs/argus-flow-diagram.html)_
