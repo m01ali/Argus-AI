@@ -1,8 +1,8 @@
 # Argus-AI
 
-A privacy-first continuous vulnerability-assessment and patch-recommendation agent built on the Privacy-First LLM Pentesting Framework (PLPF). The accompanying research paper has been submitted to the IEEE ICET 2026.
+### A privacy-first continuous vulnerability-assessment and patch-recommendation agent built on the Privacy-First LLM Pentesting Framework (PLPF). The accompanying research paper has been submitted to the IEEE ICET 2026.
 
-Argus-AI implements a four-stage closed loop modelled on the Aardvark and Codex Security scan-validate-patch-rescan pattern. Every model call runs on a local LLM served by Ollama, ensuring engagement data (target IPs, scan output, discovered vulnerabilities, credentials) never leaves the assessment host. This fundamentally differs from cloud agents like OpenAI's Aardvark and Anthropic's Claude Security. Those agents require uploading source and scan data to remote inference and are categorically prohibited in many regulated environments.
+### Argus-AI implements a four-stage closed loop modelled on the Aardvark and Codex Security scan-validate-patch-rescan pattern. Every model call runs on a local LLM served by Ollama, ensuring engagement data (target IPs, scan output, discovered vulnerabilities, credentials) never leaves the assessment host. This fundamentally differs from cloud agents like OpenAI's Aardvark and Anthropic's Claude Security. Those agents require uploading source and scan data to remote inference and are categorically prohibited in many regulated environments.
 ---
 
 ## The four-stage closed loop
